@@ -1,18 +1,30 @@
 openapi: 3.0.3
 info:
-  title: JollofAI Auth API
-  version: 1.0.0
-  description: Authentication and User Management API for JollofAI
+  title: JollofAI Backend API
+  version: 1.2.0
+  description: >
+    Backend API for **JollofAI** — AI-powered meal and vendor discovery platform.
+    Includes authentication (JWT & Google OAuth) and vendor integration with Google Places API.
 
 servers:
-  - url: http://localhost:3000/api
-    description: Local Development Server
+  - url: http://localhost:5000/api
 
 tags:
   - name: Auth
-    description: User authentication and authorization endpoints
+    description: User authentication and profile management
+  - name: Vendors
+    description: Vendor management and Google Places integration
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
 
 paths:
+
+  ##############################
+  # AUTH ROUTES
+  ##############################
+
   /auth/register:
     post:
       summary: Register a new user
@@ -23,17 +35,17 @@ paths:
           application/json:
             schema:
               type: object
-              required: [name, email, password]
+              required:
+                - name
+                - email
+                - password
               properties:
                 name:
                   type: string
-                  example: Emmanuel Adeyemi
                 email:
                   type: string
-                  example: emmanuel@example.com
                 password:
                   type: string
-                  example: StrongPass123!
       responses:
         "201":
           description: User registered successfully
@@ -42,7 +54,7 @@ paths:
 
   /auth/login:
     post:
-      summary: Login user with email and password
+      summary: Log in and receive JWT
       tags: [Auth]
       requestBody:
         required: true
@@ -50,31 +62,43 @@ paths:
           application/json:
             schema:
               type: object
-              required: [email, password]
+              required:
+                - email
+                - password
               properties:
                 email:
                   type: string
-                  example: emmanuel@example.com
                 password:
                   type: string
-                  example: StrongPass123!
       responses:
         "200":
-          description: Login successful
+          description: Login successful, returns JWT
         "401":
           description: Invalid credentials
 
-  /auth/logout:
-    post:
-      summary: Logout user and clear JWT cookie
+  /auth/google:
+    get:
+      summary: Google OAuth login (redirect)
       tags: [Auth]
+      description: Redirects user to Google for authentication.
+      responses:
+        "302":
+          description: Redirect to Google Auth
+
+  /auth/google/callback:
+    get:
+      summary: Google OAuth callback
+      tags: [Auth]
+      description: Handles redirect from Google and issues JWT.
       responses:
         "200":
-          description: Successfully logged out
+          description: Google login success with JWT
+        "400":
+          description: Invalid or expired Google token
 
   /auth/forgot-password:
     post:
-      summary: Send password reset link to email
+      summary: Request password reset email
       tags: [Auth]
       requestBody:
         required: true
@@ -82,100 +106,228 @@ paths:
           application/json:
             schema:
               type: object
-              required: [email]
+              required:
+                - email
               properties:
                 email:
                   type: string
-                  example: emmanuel@example.com
       responses:
         "200":
           description: Reset link sent
         "404":
           description: Email not found
 
-  /auth/reset-password/{token}:
+  /auth/reset-password:
     post:
       summary: Reset password using token
       tags: [Auth]
-      parameters:
-        - name: token
-          in: path
-          required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [password]
+              required:
+                - token
+                - newPassword
               properties:
-                password:
+                token:
                   type: string
-                  example: NewStrongPassword123!
+                newPassword:
+                  type: string
       responses:
         "200":
-          description: Password successfully reset
+          description: Password reset successful
         "400":
           description: Invalid or expired token
 
-  /auth/me:
+  /auth/profile:
     get:
-      summary: Get currently authenticated user
-      security:
-        - bearerAuth: []
+      summary: Get logged-in user profile
       tags: [Auth]
+      security:
+        - BearerAuth: []
       responses:
         "200":
-          description: Returns authenticated user details
+          description: User profile returned
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  user:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                      name:
-                        type: string
-                      email:
-                        type: string
-                      role:
-                        type: string
-                      isGoogleUser:
-                        type: boolean
-                      createdAt:
-                        type: string
-                        format: date-time
+                $ref: "#/components/schemas/User"
         "401":
-          description: Unauthorized - Missing or invalid token
+          description: Unauthorized
 
-  /auth/google:
-    get:
-      summary: Redirect to Google OAuth login
-      tags: [Auth]
-      responses:
-        "302":
-          description: Redirect to Google login
+  ##############################
+  # VENDOR ROUTES
+  ##############################
 
-  /auth/google/callback:
-    get:
-      summary: Google OAuth callback URL
-      tags: [Auth]
+  /vendors/sync:
+    post:
+      summary: Sync vendor data from Google Places API
+      tags: [Vendors]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - lat
+                - lng
+              properties:
+                lat:
+                  type: number
+                  example: 6.5244
+                lng:
+                  type: number
+                  example: 3.3792
       responses:
         "200":
-          description: Successful Google authentication and JWT issuance
-        "401":
-          description: Google authentication failed
+          description: Vendor data synced successfully
+        "400":
+          description: Missing latitude or longitude
+        "403":
+          description: Invalid or missing API key
+        "429":
+          description: Too many requests
+        "500":
+          description: Error syncing vendors
+
+  /vendors/nearby:
+    get:
+      summary: Get vendors near a location
+      tags: [Vendors]
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+          example: 6.5244
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+          example: 3.3792
+        - name: radius
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 5000
+          example: 5000
+      responses:
+        "200":
+          description: Nearby vendors returned
+        "400":
+          description: Missing coordinates
+        "500":
+          description: Error fetching vendors
+
+  /vendors/{id}:
+    get:
+      summary: Get vendor by ID
+      tags: [Vendors]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 652f2c91e92c1fef12345678
+      responses:
+        "200":
+          description: Vendor found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vendor"
+        "404":
+          description: Vendor not found
+        "500":
+          description: Error fetching vendor
 
 components:
   securitySchemes:
-    bearerAuth:
+    BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+
+  schemas:
+
+    ##############################
+    # USER MODEL
+    ##############################
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+          description: Hashed password
+        provider:
+          type: string
+          enum: [local, google]
+        googleId:
+          type: string
+          nullable: true
+        avatar:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ##############################
+    # VENDOR MODEL
+    ##############################
+    Vendor:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        placeId:
+          type: string
+        address:
+          type: string
+        location:
+          type: object
+          properties:
+            type:
+              type: string
+              example: Point
+            coordinates:
+              type: array
+              items:
+                type: number
+              example: [3.3792, 6.5244]
+        rating:
+          type: number
+        userRatingsTotal:
+          type: number
+        image:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

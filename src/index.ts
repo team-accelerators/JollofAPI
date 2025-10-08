@@ -1,5 +1,5 @@
 import { setupSwagger } from './swagger';
-
+import "./jobs/vendorCron";
 import dotenv from 'dotenv';
 import app from './server';
 import {connectDB} from '../config/connectDB'
@@ -7,7 +7,7 @@ import {connectDB} from '../config/connectDB'
 import cron from 'node-cron';
 import axios from 'axios';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 dotenv.config()
 
 cron.schedule('*/1440 * * * *', async () => {
@@ -38,5 +38,5 @@ setupSwagger(app);
   
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log('Swagger docs at http://localhost:3000/api-docs');
+  console.log('Swagger docs at http://localhost:5000/api-docs');
 });
