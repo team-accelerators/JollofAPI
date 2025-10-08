@@ -1,0 +1,181 @@
+openapi: 3.0.3
+info:
+  title: JollofAI Auth API
+  version: 1.0.0
+  description: Authentication and User Management API for JollofAI
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local Development Server
+
+tags:
+  - name: Auth
+    description: User authentication and authorization endpoints
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                  example: Emmanuel Adeyemi
+                email:
+                  type: string
+                  example: emmanuel@example.com
+                password:
+                  type: string
+                  example: StrongPass123!
+      responses:
+        "201":
+          description: User registered successfully
+        "400":
+          description: Invalid input or user already exists
+
+  /auth/login:
+    post:
+      summary: Login user with email and password
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  example: emmanuel@example.com
+                password:
+                  type: string
+                  example: StrongPass123!
+      responses:
+        "200":
+          description: Login successful
+        "401":
+          description: Invalid credentials
+
+  /auth/logout:
+    post:
+      summary: Logout user and clear JWT cookie
+      tags: [Auth]
+      responses:
+        "200":
+          description: Successfully logged out
+
+  /auth/forgot-password:
+    post:
+      summary: Send password reset link to email
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  example: emmanuel@example.com
+      responses:
+        "200":
+          description: Reset link sent
+        "404":
+          description: Email not found
+
+  /auth/reset-password/{token}:
+    post:
+      summary: Reset password using token
+      tags: [Auth]
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password:
+                  type: string
+                  example: NewStrongPassword123!
+      responses:
+        "200":
+          description: Password successfully reset
+        "400":
+          description: Invalid or expired token
+
+  /auth/me:
+    get:
+      summary: Get currently authenticated user
+      security:
+        - bearerAuth: []
+      tags: [Auth]
+      responses:
+        "200":
+          description: Returns authenticated user details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        type: string
+                      isGoogleUser:
+                        type: boolean
+                      createdAt:
+                        type: string
+                        format: date-time
+        "401":
+          description: Unauthorized - Missing or invalid token
+
+  /auth/google:
+    get:
+      summary: Redirect to Google OAuth login
+      tags: [Auth]
+      responses:
+        "302":
+          description: Redirect to Google login
+
+  /auth/google/callback:
+    get:
+      summary: Google OAuth callback URL
+      tags: [Auth]
+      responses:
+        "200":
+          description: Successful Google authentication and JWT issuance
+        "401":
+          description: Google authentication failed
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
