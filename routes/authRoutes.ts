@@ -22,16 +22,6 @@ router.post("/forgot-password", authLimiter, forgotPassword);
 
 router.post("/reset-password/:token", resetPassword);
 
-// ✅ Protected route to get current user
-/**
- * @swagger
- * /api/me:
- *   get:
- *     summary: current user
- *     responses:
- *       200:
- *         description: current user
- */
 router.get("/me", protect, getUser as unknown as RequestHandler);
 
 

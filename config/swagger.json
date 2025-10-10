@@ -1,0 +1,619 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "JollofAI Backend API",
+    "version": "1.0.0",
+    "description": "OpenAPI 3.0 specification for JollofAI — authentication, recipes, ingredients, vendor integration, AI recipe features and meal planning."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" }
+        }
+      },
+      "AuthRegister": {
+        "type": "object",
+        "required": ["name", "email", "password"],
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        }
+      },
+      "AuthLogin": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string" },
+          "user": { "$ref": "#/components/schemas/User" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "avatar": { "type": "string" },
+          "provider": { "type": "string", "enum": ["local", "google"], "default": "local" },
+          "preferences": {
+            "type": "object",
+            "properties": {
+              "dietaryMode": { "type": "string" },
+              "allergies": { "type": "array", "items": { "type": "string" } },
+              "favoriteCuisines": { "type": "array", "items": { "type": "string" } },
+              "goal": { "type": "string", "example": "muscle_gain" }
+            }
+          },
+          "role": { "type": "string", "example": "user" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Vendor": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "placeId": { "type": "string" },
+          "address": { "type": "string" },
+          "location": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "example": "Point" },
+              "coordinates": { "type": "array", "items": { "type": "number" }, "example": [3.3792, 6.5244] }
+            }
+          },
+          "phone": { "type": "string" },
+          "website": { "type": "string" },
+          "openingHours": { "type": "array", "items": { "type": "string" } },
+          "rating": { "type": "number" },
+          "userRatingsTotal": { "type": "integer" },
+          "cuisine": { "type": "array", "items": { "type": "string" } },
+          "image": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Ingredient": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "category": { "type": "string" },
+          "nutritionalValue": {
+            "type": "object",
+            "properties": {
+              "calories": { "type": "number" },
+              "protein": { "type": "number" },
+              "fat": { "type": "number" },
+              "carbs": { "type": "number" }
+            }
+          },
+          "imageUrl": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Recipe": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "cuisine": { "type": "string" },
+          "diet": { "type": "string" },
+          "difficulty": { "type": "string", "enum": ["easy", "medium", "hard"] },
+          "prepTime": { "type": "number" },
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ingredientId": { "type": "string" },
+                "name": { "type": "string" },
+                "quantity": { "type": "string" }
+              }
+            }
+          },
+          "instructions": { "type": "array", "items": { "type": "string" } },
+          "image": { "type": "string" },
+          "nutrition": {
+            "type": "object",
+            "properties": {
+              "calories": { "type": "number" },
+              "protein": { "type": "number" },
+              "carbs": { "type": "number" },
+              "fat": { "type": "number" }
+            }
+          },
+          "author": { "type": "string" },
+          "isCommunityRecipe": { "type": "boolean" },
+          "dietaryTags": { "type": "array", "items": { "type": "string" } },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "RecipeInput": {
+        "type": "object",
+        "required": ["title", "ingredients", "instructions"],
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "cuisine": { "type": "string" },
+          "diet": { "type": "string" },
+          "difficulty": { "type": "string", "enum": ["easy", "medium", "hard"] },
+          "prepTime": { "type": "number" },
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ingredientId": { "type": "string" },
+                "name": { "type": "string" },
+                "quantity": { "type": "string" }
+              }
+            }
+          },
+          "instructions": { "type": "array", "items": { "type": "string" } },
+          "image": { "type": "string" },
+          "nutrition": {
+            "type": "object",
+            "properties": {
+              "calories": { "type": "number" },
+              "protein": { "type": "number" },
+              "carbs": { "type": "number" },
+              "fat": { "type": "number" }
+            }
+          }
+        }
+      },
+      "RecipeMatch": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "matchPercent": { "type": "number" },
+          "cookingTime": { "type": "number" },
+          "difficulty": { "type": "string" }
+        }
+      },
+      "AIRecipeSuggestion": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "ingredients": { "type": "array", "items": { "type": "string" } },
+          "instructions": { "type": "string" },
+          "imageUrl": { "type": "string" },
+          "source": { "type": "string" },
+          "cookingTime": { "type": "number" },
+          "difficulty": { "type": "string" },
+          "nutrition": {
+            "type": "object",
+            "properties": {
+              "calories": { "type": "number" },
+              "protein": { "type": "number" },
+              "fat": { "type": "number" },
+              "carbs": { "type": "number" }
+            }
+          }
+        }
+      },
+      "MealPlan": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "userId": { "type": "string" },
+          "weekStart": { "type": "string", "format": "date" },
+          "preferences": {
+            "type": "object",
+            "properties": {
+              "diet": { "type": "string" },
+              "cuisine": { "type": "string" },
+              "calorieTarget": { "type": "number" },
+              "goal": { "type": "string" },
+              "avoidIngredients": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "plan": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "day": { "type": "string" },
+                "meals": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": { "type": "string", "enum": ["breakfast", "lunch", "dinner"] },
+                      "recipeId": { "type": "string" },
+                      "title": { "type": "string" },
+                      "calories": { "type": "number" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "IngredientInput": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "category": { "type": "string" },
+          "nutritionalValue": {
+            "type": "object",
+            "properties": {
+              "calories": { "type": "number" },
+              "protein": { "type": "number" },
+              "fat": { "type": "number" },
+              "carbs": { "type": "number" }
+            }
+          },
+          "imageUrl": { "type": "string" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthRegister" } } }
+        },
+        "responses": {
+          "201": { "description": "User registered", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } },
+          "400": { "description": "Bad request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login user and return JWT",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthLogin" } } }
+        },
+        "responses": {
+          "200": { "description": "Authenticated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } },
+          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/auth/google": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Redirect to Google OAuth",
+        "responses": { "302": { "description": "Redirect to Google" } }
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Google OAuth callback (issues JWT and returns to frontend)",
+        "responses": {
+          "200": { "description": "Google auth success (redirect with cookie/token)" },
+          "400": { "description": "Google auth failed" }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Send password reset link to email",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "email": { "type": "string" } } } } }
+        },
+        "responses": {
+          "200": { "description": "Reset email sent" },
+          "404": { "description": "Email not found" }
+        }
+      }
+    },
+    "/auth/reset-password/{token}": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Reset password using token",
+        "parameters": [{ "name": "token", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "password": { "type": "string" } } } } }
+        },
+        "responses": {
+          "200": { "description": "Password reset" },
+          "400": { "description": "Invalid or expired token" }
+        }
+      }
+    },
+    "/auth/profile": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get current authenticated user's profile",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "User profile", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } },
+          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+
+    "/vendors/sync": {
+      "post": {
+        "tags": ["Vendor"],
+        "summary": "Sync vendor data from Google Places API (requires API key)",
+        "security": [{ "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["lat", "lng"], "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } } } } }
+        },
+        "responses": {
+          "200": { "description": "Sync completed" },
+          "400": { "description": "Bad request" },
+          "403": { "description": "Invalid API key" },
+          "429": { "description": "Rate limit exceeded" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/vendors/nearby": {
+      "get": {
+        "tags": ["Vendor"],
+        "summary": "Find vendors near a location",
+        "parameters": [
+          { "name": "lat", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "lng", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "radius", "in": "query", "required": false, "schema": { "type": "number", "default": 5000 } }
+        ],
+        "responses": {
+          "200": { "description": "Nearby vendors returned", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Vendor" } } } } },
+          "400": { "description": "Missing coordinates" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/vendors/{id}": {
+      "get": {
+        "tags": ["Vendor"],
+        "summary": "Get vendor by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Vendor returned", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Vendor" } } } },
+          "404": { "description": "Vendor not found" }
+        }
+      }
+    },
+    "/vendors/update-monthly": {
+      "put": {
+        "tags": ["Vendor"],
+        "summary": "Trigger monthly vendor update (cron-safe/admin) - requires API key",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": {
+          "200": { "description": "Update triggered" },
+          "403": { "description": "Invalid API key" }
+        }
+      }
+    },
+
+    "/ingredients": {
+      "post": {
+        "tags": ["Ingredient"],
+        "summary": "Create an ingredient",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IngredientInput" } } }
+        },
+        "responses": {
+          "201": { "description": "Ingredient created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Ingredient" } } } },
+          "400": { "description": "Bad request" }
+        }
+      },
+      "get": {
+        "tags": ["Ingredient"],
+        "summary": "List/search ingredients",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" }, "description": "Search query (name)" },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": {
+          "200": { "description": "List of ingredients", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Ingredient" } } } } }
+        }
+      }
+    },
+    "/ingredients/{id}": {
+      "get": {
+        "tags": ["Ingredient"],
+        "summary": "Get ingredient by id",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Ingredient returned", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Ingredient" } } } },
+          "404": { "description": "Not found" }
+        }
+      },
+      "put": {
+        "tags": ["Ingredient"],
+        "summary": "Update ingredient",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IngredientInput" } } } },
+        "responses": { "200": { "description": "Updated" }, "404": { "description": "Not found" } }
+      },
+      "delete": {
+        "tags": ["Ingredient"],
+        "summary": "Delete ingredient",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not found" } }
+      }
+    },
+
+    "/recipes": {
+      "get": {
+        "tags": ["Recipe"],
+        "summary": "Get all recipes (supports search & filters)",
+        "parameters": [
+          { "name": "name", "in": "query", "schema": { "type": "string" }, "description": "Search by recipe name (partial, case-insensitive)" },
+          { "name": "cuisine", "in": "query", "schema": { "type": "string" } },
+          { "name": "diet", "in": "query", "schema": { "type": "string" } },
+          { "name": "ingredients", "in": "query", "schema": { "type": "string" }, "description": "Comma-separated ingredient names (e.g. rice,tomato)" },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": {
+          "200": { "description": "Recipes list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "total": { "type": "integer" }, "page": { "type": "integer" }, "pageSize": { "type": "integer" }, "recipes": { "type": "array", "items": { "$ref": "#/components/schemas/Recipe" } } } } } } }
+        }
+      },
+      "post": {
+        "tags": ["Recipe"],
+        "summary": "Create a new recipe",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RecipeInput" } } } },
+        "responses": {
+          "201": { "description": "Recipe created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Recipe" } } } },
+          "400": { "description": "Bad request" }
+        }
+      }
+    },
+    "/recipes/{id}": {
+      "get": {
+        "tags": ["Recipe"],
+        "summary": "Get recipe by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Recipe returned", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Recipe" } } } },
+          "404": { "description": "Not found" }
+        }
+      },
+      "put": {
+        "tags": ["Recipe"],
+        "summary": "Update recipe",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RecipeInput" } } } },
+        "responses": { "200": { "description": "Updated" }, "404": { "description": "Not found" } }
+      },
+      "delete": {
+        "tags": ["Recipe"],
+        "summary": "Delete recipe",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not found" } }
+      }
+    },
+
+    "/recipes/match": {
+      "post": {
+        "tags": ["Recipe", "AI"],
+        "summary": "Find recipes matching provided ingredients (AI matcher)",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["ingredients"], "properties": { "ingredients": { "type": "array", "items": { "type": "string" } }, "dietaryPreferences": { "type": "array", "items": { "type": "string" } }, "cuisine": { "type": "string" }, "maxResults": { "type": "integer", "default": 10 } } } } }
+        },
+        "responses": {
+          "200": { "description": "List of matched recipes", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/RecipeMatch" } } } } },
+          "400": { "description": "Invalid input" }
+        }
+      }
+    },
+
+    "/ai/recipes/discover": {
+      "get": {
+        "tags": ["Recipe", "AI"],
+        "summary": "Personalized recipe discovery feed",
+        "parameters": [
+          { "name": "userId", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "mood", "in": "query", "schema": { "type": "string" } },
+          { "name": "cuisine", "in": "query", "schema": { "type": "string" } },
+          { "name": "diet", "in": "query", "schema": { "type": "string" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": { "description": "Personalized recipe feed", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/AIRecipeSuggestion" } } } } }
+        }
+      }
+    },
+
+    "/ai/recipes/chat-assistant": {
+      "post": {
+        "tags": ["Recipe", "AI"],
+        "summary": "Conversational AI cooking assistant",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["prompt"], "properties": { "prompt": { "type": "string" }, "pantrySnapshot": { "type": "array", "items": { "type": "object" } } } } } }
+        },
+        "responses": {
+          "200": { "description": "Assistant reply", "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string" }, "suggestedRecipes": { "type": "array", "items": { "$ref": "#/components/schemas/AIRecipeSuggestion" } } } } } } }
+        }
+      }
+    },
+
+    "/meal-plan": {
+      "post": {
+        "tags": ["MealPlan", "AI"],
+        "summary": "Generate AI-optimized weekly meal plan",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "preferences": { "type": "object", "properties": { "diet": { "type": "string" }, "cuisine": { "type": "string" }, "calorieTarget": { "type": "number" }, "goal": { "type": "string", "enum": ["muscle_gain", "weight_loss", "balanced"] }, "avoidIngredients": { "type": "array", "items": { "type": "string" } } } } } } } }
+        },
+        "responses": {
+          "201": { "description": "Meal plan generated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MealPlan" } } } },
+          "400": { "description": "Bad request" }
+        }
+      },
+      "get": {
+        "tags": ["MealPlan"],
+        "summary": "Get user's latest meal plan",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "User meal plan", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MealPlan" } } } },
+          "404": { "description": "No meal plan found" }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Auth", "description": "Authentication / user profile" },
+    { "name": "Vendor", "description": "Vendor discovery and Google Places integration" },
+    { "name": "Ingredient", "description": "Ingredient CRUD & search" },
+    { "name": "Recipe", "description": "Recipe CRUD, search and AI matching" },
+    { "name": "AI", "description": "AI endpoints for suggestions and chat" },
+    { "name": "MealPlan", "description": "AI-powered meal planning" }
+  ]
+}
