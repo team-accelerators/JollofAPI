@@ -3,26 +3,26 @@ import { RequestHandler } from "express";
 import passport from "passport";
 import "../config/passport";
 import {
-  register,
+  signup,
   login,
   logout,
   forgotPassword,
   resetPassword,
-  getUser
+  
 } from "../controllers/authController";
 import { authLimiter } from "../middlewares/rateLimiter";
 import { protect } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
-router.post("/register", authLimiter, register);
+router.post("/register", authLimiter, signup);
 router.post("/login", authLimiter, login);
 router.post("/logout", logout);
 router.post("/forgot-password", authLimiter, forgotPassword);
 
 router.post("/reset-password/:token", resetPassword);
 
-router.get("/me", protect, getUser as unknown as RequestHandler);
+// router.get("/me", protect, getUser as unknown as RequestHandler);
 
 
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));

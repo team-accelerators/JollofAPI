@@ -1,50 +1,74 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema, Types } from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
+// Interface for CookingHabits
+interface CookingHabits {
+  skillLevel: 'beginner' | 'intermediate' | 'advanced';
+  mealFrequency: 'daily' | 'weekly' | 'monthly';
+  prefersQuickMeals: boolean;
+}
+
+
+interface IUserModel extends Model<IUser> {}
+
+
+// User Document Interface
 export interface IUser extends Document {
   name: string;
   email: string;
-  password?: string;
   googleId?: string;
   avatar?: string;
   isGoogleUser: boolean;
+
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
-  role: "user" | "admin";
-  preferences?: {
-    dietaryMode?: string;
-    allergies?: string[];
-  };
+
+  password?: string;
+
+  dietaryPreferences: string[];
+  cookingHabits: CookingHabits;
+  culturalBackground: string;
+
+  savedRecipes: Types.ObjectId[];
+  likedRecipes: Types.ObjectId[];
+    // 👇 Add these method declarations
   matchPassword(entered: string): Promise<boolean>;
   createPasswordResetToken(): string;
+
 }
 
-const UserSchema: Schema<IUser> = new Schema(
-  {
-    name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String, select: false },
-    googleId: { type: String, unique: true, sparse: true },
-    avatar: String,
-    isGoogleUser: { type: Boolean, default: false },
+// Schema definition
+const UserSchema = new Schema<IUser>({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
 
-    resetPasswordToken: { type: String, select: false },
-    resetPasswordExpires: { type: Date },
+  googleId: { type: String, unique: true, sparse: true },
+  avatar: { type: String },
+  isGoogleUser: { type: Boolean, default: false },
 
-    role: { type: String, enum: ["user", "admin"], default: "user" },
+  resetPasswordToken: { type: String, select: false },
+  resetPasswordExpires: { type: Date },
 
-    preferences: {
-      dietaryMode: {
-        type: String,
-        enum: ["vegan", "vegetarian", "keto", "halal", "none"],
-        default: "none",
-      },
-      allergies: [String],
+  password: { type: String }, // Not required for Google users
+
+  dietaryPreferences: [{ type: String }],
+  cookingHabits: {
+    skillLevel: {
+      type: String,
+      enum: ['beginner', 'intermediate', 'advanced'],
     },
+    mealFrequency: {
+      type: String,
+      enum: ['daily', 'weekly', 'monthly'],
+    },
+    prefersQuickMeals: { type: Boolean },
   },
-  { timestamps: true }
-);
+  culturalBackground: { type: String },
+
+  savedRecipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
+  likedRecipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
+});
 
 UserSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -67,4 +91,5 @@ UserSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
-export default mongoose.model<IUser>("User", UserSchema);
+const User = mongoose.model<IUser, IUserModel>("User", UserSchema);
+export default User;
