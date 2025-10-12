@@ -3,7 +3,7 @@ import Recipe from "../models/recipe";
 import UserModel from "../models/user";
 import { getOpenAIEmbedding } from "../utils/embedding";
 import { cosineSimilarity } from "../utils/cosine";
-
+import { generateRecipesFromOpenAI } from '../utils/openaiRecipes';
 /**
  * @desc Create a new recipe with AI embedding
  * @route POST /api/recipes
@@ -108,45 +108,37 @@ export const matchIngredientsToRecipes = async (req: Request, res: Response) => 
       embedding: { $exists: true },
     };
 
-    // Filters
-    if (filters?.costLevel) {
-      query.costLevel = filters.costLevel;
-    }
-
-    if (filters?.dietaryTags && Array.isArray(filters.dietaryTags)) {
-      query.dietaryTags = { $all: filters.dietaryTags };
-    }
-
-    if (filters?.maxPrepTime) {
-      query.prepTime = { $lte: filters.maxPrepTime };
-    }
-
-    if (filters?.cuisine) {
-      query.cuisine = filters.cuisine;
-    }
-
-    if (filters?.moodTags && Array.isArray(filters.moodTags)) {
-      query.moodTags = { $all: filters.moodTags };
-    }
+    if (filters?.costLevel) query.costLevel = filters.costLevel;
+    if (filters?.dietaryTags?.length) query.dietaryTags = { $all: filters.dietaryTags };
+    if (filters?.maxPrepTime) query.prepTime = { $lte: filters.maxPrepTime };
+    if (filters?.cuisine) query.cuisine = filters.cuisine;
+    if (filters?.moodTags?.length) query.moodTags = { $all: filters.moodTags };
 
     const recipes = await Recipe.find(query);
 
-    const scored = recipes.map((recipe) => {
-      const similarity = cosineSimilarity(userEmbedding, recipe.embedding || []);
-      return { recipe, similarity };
-    });
+    const scored = recipes.map((recipe) => ({
+      recipe,
+      similarity: cosineSimilarity(userEmbedding, recipe.embedding || []),
+    }));
 
     const topRecipes = scored
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, 3)
       .map((r) => r.recipe);
 
-    res.json(topRecipes);
+    if (topRecipes.length > 0) {
+      return res.json({ source: 'internal', recipes: topRecipes });
+    }
+
+    // 🧠 Fall back to OpenAI if no good matches found
+    const generatedRecipes = await generateRecipesFromOpenAI(inputText, filters);
+    return res.json({ source: 'openai', recipes: generatedRecipes });
   } catch (err) {
     console.error('Ingredient matching failed:', err);
     res.status(500).json({ error: 'Failed to match ingredients' });
   }
 };
+
 
 
 /**
