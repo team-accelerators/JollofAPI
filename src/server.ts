@@ -17,9 +17,7 @@ app.get("/api/me", protect, (req, res) => {
   res.json({ user: req.user });
 });
 
-app.get("/", protect, (req, res) => {
-  res.json({ user: req.user });
-});
+
 
 // Home route
 app.get('/', (req, res) => {
