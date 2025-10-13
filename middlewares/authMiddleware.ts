@@ -1,34 +1,65 @@
-import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User, { IUser } from "../models/user";
+import asyncHandler from "express-async-handler";
+import { Request, Response, NextFunction } from "express";
+import User from "../models/user";
 
-export interface AuthRequest extends Request {
-  user?: IUser;
+interface DecodedToken {
+  id: string;
+  iat: number;
+  exp: number;
 }
 
-export const protect = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+declare global {
+  namespace Express {
+    interface Request {
+      user?: any;
+    }
+  }
+}
+
+/**
+ * Protect middleware — verifies JWT and attaches user to request
+ */
+export const protect = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  let token: string | undefined;
+
+  // Allow either Authorization Bearer token or cookie
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies && req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+
+  if (!token) {
+    res.status(401);
+    throw new Error("Not authorized, no token provided");
+  }
+
   try {
-    let token;
-    if (req.cookies?.jwt) token = req.cookies.jwt;
-    else if (req.headers.authorization?.startsWith("Bearer"))
-      token = req.headers.authorization.split(" ")[1];
-
-    if (!token) return res.status(401).json({ message: "Not authenticated" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
-      id: string;
-    };
-
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
     const user = await User.findById(decoded.id).select("-password");
-    if (!user) return res.status(401).json({ message: "User not found" });
+    if (!user) {
+      res.status(401);
+      throw new Error("User not found");
+    }
 
     req.user = user;
     next();
-  } catch {
-    res.status(401).json({ message: "Invalid or expired token" });
+  } catch (error) {
+    console.error("Auth error:", error);
+    res.status(401);
+    throw new Error("Not authorized, token failed");
+  }
+});
+
+/**
+ * Admin-only middleware — requires role = admin
+ */
+export const adminOnly = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && req.user.role === "admin") {
+    return next();
+  } else {
+    res.status(403);
+    throw new Error("Access denied: Admins only");
   }
 };

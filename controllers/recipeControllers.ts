@@ -20,8 +20,10 @@ export const createRecipe = async (req: Request, res: Response) => {
       prepTime,
       costLevel,
       moodTags,
-      imageUrl,
     } = req.body;
+
+    // Cloudinary image from middleware
+    const imageUrl = (req.file as any)?.path;
 
     const textToEmbed = `${title} ${ingredients.join(", ")} ${cuisine} ${dietaryTags.join(", ")}`;
     const embedding = await getOpenAIEmbedding(textToEmbed);
@@ -40,13 +42,12 @@ export const createRecipe = async (req: Request, res: Response) => {
     });
 
     await newRecipe.save();
-    res.status(201).json(newRecipe);
+    res.status(201).json({ success: true, data: newRecipe });
   } catch (err) {
-    console.error(err);
+    console.error("Create recipe failed:", err);
     res.status(500).json({ error: "Failed to create recipe" });
   }
 };
-
 /**
  * @desc Personalized Recipe Feed (“For You”)
  * @route GET /api/recipes/foryou?userId=<id>

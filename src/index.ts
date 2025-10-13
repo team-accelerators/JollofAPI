@@ -1,4 +1,4 @@
-import { setupSwagger } from './swagger';
+import { setupSwagger } from './swager';
 import "./jobs/vendorCron";
 import dotenv from 'dotenv';
 import app from './server';
@@ -32,7 +32,7 @@ await connectDB(MONGO_URL!);
 
 }
 
- startServer();
+startServer();
 
 setupSwagger(app);
   

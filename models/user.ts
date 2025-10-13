@@ -1,19 +1,13 @@
-import mongoose, { Document, Model, Schema, Types } from "mongoose";
+import mongoose, { Document, Schema, ObjectId , Types } from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
-// Interface for CookingHabits
 interface CookingHabits {
-  skillLevel: 'beginner' | 'intermediate' | 'advanced';
-  mealFrequency: 'daily' | 'weekly' | 'monthly';
+  skillLevel: "beginner" | "intermediate" | "advanced";
+  mealFrequency: "daily" | "weekly" | "monthly";
   prefersQuickMeals: boolean;
 }
 
-
-interface IUserModel extends Model<IUser> {}
-
-
-// User Document Interface
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -21,10 +15,8 @@ export interface IUser extends Document {
   avatar?: string;
   isGoogleUser: boolean;
 
-  resetPasswordToken?: string;
-  resetPasswordExpires?: Date;
-
   password?: string;
+  role: "admin" | "user";
 
   dietaryPreferences: string[];
   cookingHabits: CookingHabits;
@@ -32,44 +24,50 @@ export interface IUser extends Document {
 
   savedRecipes: Types.ObjectId[];
   likedRecipes: Types.ObjectId[];
-    // 👇 Add these method declarations
+
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+
   matchPassword(entered: string): Promise<boolean>;
   createPasswordResetToken(): string;
-
 }
 
-// Schema definition
-const UserSchema = new Schema<IUser>({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+const UserSchema = new Schema<IUser>(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
 
-  googleId: { type: String, unique: true, sparse: true },
-  avatar: { type: String },
-  isGoogleUser: { type: Boolean, default: false },
+    googleId: { type: String, unique: true, sparse: true },
+    avatar: { type: String },
+    isGoogleUser: { type: Boolean, default: false },
 
-  resetPasswordToken: { type: String, select: false },
-  resetPasswordExpires: { type: Date },
+    password: { type: String, select: false },
+    role: { type: String, enum: ["admin", "user"], default: "user" },
 
-  password: { type: String }, // Not required for Google users
-
-  dietaryPreferences: [{ type: String }],
-  cookingHabits: {
-    skillLevel: {
-      type: String,
-      enum: ['beginner', 'intermediate', 'advanced'],
+    dietaryPreferences: [{ type: String }],
+    cookingHabits: {
+      skillLevel: {
+        type: String,
+        enum: ["beginner", "intermediate", "advanced"],
+      },
+      mealFrequency: {
+        type: String,
+        enum: ["daily", "weekly", "monthly"],
+      },
+      prefersQuickMeals: { type: Boolean },
     },
-    mealFrequency: {
-      type: String,
-      enum: ['daily', 'weekly', 'monthly'],
-    },
-    prefersQuickMeals: { type: Boolean },
+    culturalBackground: { type: String },
+
+    savedRecipes: [{ type: Schema.Types.ObjectId, ref: "Recipe" }],
+    likedRecipes: [{ type: Schema.Types.ObjectId, ref: "Recipe" }],
+
+    passwordResetToken: { type: String },
+    passwordResetExpires: { type: Date },
   },
-  culturalBackground: { type: String },
+  { timestamps: true }
+);
 
-  savedRecipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
-  likedRecipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
-});
-
+// Hash password before save
 UserSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
@@ -83,13 +81,12 @@ UserSchema.methods.matchPassword = async function (entered: string) {
 
 UserSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
-  this.resetPasswordToken = crypto
+  this.passwordResetToken = crypto
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  this.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
+  this.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
   return resetToken;
 };
 
-const User = mongoose.model<IUser, IUserModel>("User", UserSchema);
-export default User;
+export default mongoose.model<IUser>("User", UserSchema);
