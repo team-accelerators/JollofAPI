@@ -11,10 +11,8 @@ export default function Navbar() {
   const { user, logout } = useAuth();
 
   const navLinks = [
-    { to: "/", label: "Home" },
-    { to: "/recipe-generator", label: "Recipe Generator" },
-    { to: "/ingredients", label: "Ingredients" },
-    { to: "/about", label: "About" },
+    { to: "/", label: "🏠 Home" },
+    { to: "/about", label: "ℹ️ About" },
   ];
 
   const isActiveLink = (path: string) => location.pathname === path;
@@ -26,21 +24,26 @@ export default function Navbar() {
   };
 
   return (
-    <header className="bg-white shadow sticky top-0 z-40">
-      <div className="container-max px-4 py-4">
+    <header className="bg-white/95 backdrop-blur-sm shadow-soft sticky top-0 z-40 border-b border-neutral-200">
+      <div className="container-max px-6 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            JollofAI
+          <Link
+            to="/"
+            className="text-2xl font-display font-bold text-primary hover:text-primary/80 transition-colors duration-300"
+          >
+            🍛 JollofAI
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActiveLink(link.to) ? "text-primary" : "text-gray-600"
+                className={`text-sm font-display font-medium transition-all duration-300 px-3 py-2 rounded-xl hover:bg-primary/10 ${
+                  isActiveLink(link.to)
+                    ? "text-primary bg-primary/10"
+                    : "text-neutral-600 hover:text-primary"
                 }`}
               >
                 {link.label}
@@ -48,28 +51,28 @@ export default function Navbar() {
             ))}
 
             {/* Auth Section */}
-            <div className="flex items-center space-x-4 ml-6">
+            <div className="flex items-center space-x-4 ml-8">
               {user ? (
                 <>
                   {/* Dashboard Link */}
                   <Link
                     to="/dashboard"
-                    className={`text-sm font-medium transition-colors hover:text-primary ${
+                    className={`text-sm font-display font-medium transition-all duration-300 px-3 py-2 rounded-xl hover:bg-primary/10 ${
                       isActiveLink("/dashboard")
-                        ? "text-primary"
-                        : "text-gray-600"
+                        ? "text-primary bg-primary/10"
+                        : "text-neutral-600 hover:text-primary"
                     }`}
                   >
-                    Dashboard
+                    📊 Dashboard
                   </Link>
 
                   {/* User Menu */}
                   <div className="relative">
                     <button
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                      className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
+                      className="flex items-center space-x-2 text-sm font-display font-medium text-neutral-700 hover:text-primary transition-all duration-300 px-3 py-2 rounded-xl hover:bg-primary/10"
                     >
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center neumorphic">
                         <span className="text-primary font-bold">
                           {user.fullName?.charAt(0).toUpperCase()}
                         </span>
@@ -93,26 +96,26 @@ export default function Navbar() {
                     </button>
 
                     {isUserMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-large py-2 z-50 border border-neutral-200 neumorphic">
                         <Link
                           to="/dashboard"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          className="block px-4 py-3 text-sm font-display text-neutral-700 hover:bg-primary/10 hover:text-primary transition-all duration-200 mx-2 rounded-xl"
                         >
-                          Dashboard
+                          📊 Dashboard
                         </Link>
                         <Link
                           to="/profile"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          className="block px-4 py-3 text-sm font-display text-neutral-700 hover:bg-primary/10 hover:text-primary transition-all duration-200 mx-2 rounded-xl"
                         >
-                          Profile Settings
+                          👤 Profile Settings
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          className="block w-full text-left px-4 py-3 text-sm font-display text-accent hover:bg-accent/10 transition-all duration-200 mx-2 rounded-xl"
                         >
-                          Sign out
+                          🚪 Sign out
                         </button>
                       </div>
                     )}
@@ -122,11 +125,11 @@ export default function Navbar() {
                 <div className="flex items-center space-x-3">
                   <Link to="/signin">
                     <Button variant="ghost" size="sm">
-                      Sign In
+                      🔐 Sign In
                     </Button>
                   </Link>
                   <Link to="/signup">
-                    <Button size="sm">Sign Up</Button>
+                    <Button size="sm">🆕 Sign Up</Button>
                   </Link>
                 </div>
               )}
@@ -208,14 +211,14 @@ export default function Navbar() {
                       onClick={() => setIsMenuOpen(false)}
                       className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100"
                     >
-                      Sign In
+                      🔐 Sign In
                     </Link>
                     <Link
                       to="/signup"
                       onClick={() => setIsMenuOpen(false)}
                       className="block px-3 py-2 rounded-md text-sm font-medium bg-primary text-white hover:opacity-90"
                     >
-                      Sign Up
+                      🆕 Sign Up
                     </Link>
                   </div>
                 )}

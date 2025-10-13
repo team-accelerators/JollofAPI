@@ -68,6 +68,22 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  to="/recipe-discovery"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Discover Recipes
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/marketplace"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  🛒 Marketplace
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/ingredients"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
@@ -128,7 +144,7 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Contact</h4>
             <ul className="space-y-2 text-sm">
-              <li className="text-gray-300">hello@jollofai.com</li>
+              <li className="text-gray-300">joffofai@gmail.com</li>
               <li className="text-gray-300">+1 (555) 123-4567</li>
               <li className="text-gray-300">
                 Lagos, Nigeria
