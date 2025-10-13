@@ -389,6 +389,72 @@ export default function VendorMarketplace() {
           </div>
         </div>
 
+        {/* JollofAI Promotional Banner */}
+        <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-2xl p-8 mb-8 shadow-soft neumorphic">
+          <div className="flex flex-col lg:flex-row items-center gap-8">
+            {/* Promotional Image */}
+            <div className="lg:w-1/2">
+              <img
+                src="/showcase/jollofai-promo.jpg"
+                alt="JollofAI - Savor the Ancestry, Taste the Future"
+                className="w-full h-auto rounded-2xl shadow-medium"
+                onError={(e) => {
+                  // Fallback to a placeholder if image doesn't load
+                  e.currentTarget.src = "/recipes/picai.jpeg";
+                }}
+              />
+            </div>
+
+            {/* Promotional Content */}
+            <div className="lg:w-1/2 text-center lg:text-left">
+              <h2 className="text-3xl font-display font-bold text-neutral-800 mb-4">
+                🍛 Savor the Ancestry, Taste the Future
+              </h2>
+              <p className="text-lg text-neutral-600 mb-6 font-display">
+                Journey through the rich tapestry of African cuisine like never
+                before. JollofAI brings the wisdom of generations and the power
+                of AI to your plate, making every discovery a celebration of
+                heritage and innovation.
+              </p>
+              <div className="flex flex-wrap gap-3 justify-center lg:justify-start mb-6">
+                <span className="bg-primary/20 text-primary px-4 py-2 rounded-xl font-display font-medium">
+                  #JollofAI
+                </span>
+                <span className="bg-secondary/20 text-secondary px-4 py-2 rounded-xl font-display font-medium">
+                  #AfricanFood
+                </span>
+                <span className="bg-primary/20 text-primary px-4 py-2 rounded-xl font-display font-medium">
+                  #FlavorUniverse
+                </span>
+                <span className="bg-secondary/20 text-secondary px-4 py-2 rounded-xl font-display font-medium">
+                  #TasteTheFuture
+                </span>
+              </div>
+              <div className="flex gap-4 justify-center lg:justify-start">
+                <Button
+                  variant="primary"
+                  onClick={() => navigate("/recipe-discovery")}
+                  className="font-display"
+                >
+                  🔍 Discover Recipes
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    window.scrollTo({
+                      top: document.body.scrollHeight,
+                      behavior: "smooth",
+                    })
+                  }
+                  className="font-display"
+                >
+                  🛒 Shop Now
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Vendors Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {sortedVendors.map((vendor) => (
