@@ -194,7 +194,7 @@ export default function RecipeDetail() {
           </Button>
           <Button
             onClick={toggleSaveRecipe}
-            variant={isSaved ? "solid" : "outline"}
+            variant={isSaved ? "primary" : "outline"}
             className={`px-6 py-3 ${
               isSaved
                 ? "bg-red-500 hover:bg-red-600 text-white"
