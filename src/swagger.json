@@ -9,7 +9,11 @@
     {
       "url": "http://localhost:5000/api",
       "description": "Local development server"
-    }
+    },
+    {
+    "url": "https://jollofapi.onrender.com/api",
+    "description": "Live production server"
+  }
   ],
   "components": {
     "securitySchemes": {
