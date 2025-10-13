@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/Button";
+import heroImage from "../images/image.png";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -110,7 +111,7 @@ export default function Home() {
                   {/* Hero Image */}
                   <div className="p-3">
                     <img
-                      src="/hero.png"
+                      src={heroImage}
                       alt="JollofAI - Traditional African cuisine made simple"
                       className="w-full h-auto object-contain rounded-xl"
                     />

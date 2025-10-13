@@ -62,21 +62,7 @@ export default function About() {
           </div>
         </div>
 
-        {/* Add floating animation */}
-        <style jsx>{`
-          @keyframes float {
-            0%,
-            100% {
-              transform: translateY(0px);
-            }
-            50% {
-              transform: translateY(-10px);
-            }
-          }
-          .animate-float {
-            animation: float 3s ease-in-out infinite;
-          }
-        `}</style>
+        {/* Floating animation handled by Tailwind CSS */}
       </section>
 
       {/* Mission Section */}

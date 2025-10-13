@@ -34,7 +34,7 @@ Open http://localhost:5173 in your browser.
 │   │   └── Footer.tsx       # Simple footer
 │   ├── pages/
 │   │   ├── Home.tsx         # Hero + about section
-│   │   └── RecipeGenerator.tsx  # Full recipe generation UI
+│   │   └── Recipe.tsx          # Full recipe generation UI
 │   ├── App.tsx              # Main app with routing
 │   ├── main.tsx             # Entry point
 │   └── index.css            # Tailwind directives

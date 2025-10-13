@@ -7,7 +7,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ToastProvider } from "./components/Toast";
 import Home from "./pages/Home";
-import RecipeGenerator from "./pages/RecipeGenerator";
+import Recipe from "./pages/Recipe";
 import About from "./pages/About";
 import Ingredients from "./pages/Ingredients";
 import SignIn from "./pages/SignIn";
@@ -24,7 +24,7 @@ export default function App() {
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/recipe-generator" element={<RecipeGenerator />} />
+                <Route path="/recipe-generator" element={<Recipe />} />
                 <Route path="/ingredients" element={<Ingredients />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/signin" element={<SignIn />} />
