@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Button from "../components/Button";
 import LoadingSpinner from "../components/LoadingSpinner";
+import VoiceInput from "../components/VoiceInput";
 import { useToast } from "../components/Toast";
 
 interface Recipe {
@@ -90,6 +91,18 @@ export default function Recipe() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               rows={4}
               required
+            />
+          </div>
+
+          {/* Voice Input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Voice Input (Alternative)
+            </label>
+            <VoiceInput
+              onTranscript={(text) => setIngredients(text)}
+              placeholder="Click the microphone and describe your ingredients..."
+              className="mb-2"
             />
           </div>
 

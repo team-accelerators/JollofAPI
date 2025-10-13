@@ -179,6 +179,211 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Featured Recipes Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container-max px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Featured African Recipes
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Discover authentic flavors from across Africa, crafted by AI and
+              perfected by tradition
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Recipe Card 1 */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-shadow">
+              <div className="relative h-64 overflow-hidden">
+                <img
+                  src="/recipes/picai.jpeg"
+                  alt="Traditional Jollof Rice"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-4 right-4">
+                  <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-800">
+                    ⭐ 4.8
+                  </span>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Classic Jollof Rice
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  The crown jewel of West African cuisine, perfectly spiced and
+                  aromatic
+                </p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>🕐 45 mins</span>
+                  <span>👥 4 servings</span>
+                  <span>🔥 Medium</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recipe Card 2 */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-shadow">
+              <div className="relative h-64 overflow-hidden">
+                <img
+                  src="/recipes/picai10.jpeg"
+                  alt="Nigerian Egusi Soup"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-4 right-4">
+                  <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-800">
+                    ⭐ 4.9
+                  </span>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Nigerian Egusi Soup
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Rich, hearty soup with ground melon seeds and leafy vegetables
+                </p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>🕐 1hr 20mins</span>
+                  <span>👥 6 servings</span>
+                  <span>🔥 Hard</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recipe Card 3 */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-shadow">
+              <div className="relative h-64 overflow-hidden">
+                <img
+                  src="/recipes/picai15.jpeg"
+                  alt="Ghanaian Kelewele"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-4 right-4">
+                  <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-800">
+                    ⭐ 4.7
+                  </span>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Spiced Plantain (Kelewele)
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Crispy fried plantain cubes with aromatic Ghanaian spices
+                </p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>🕐 25 mins</span>
+                  <span>👥 4 servings</span>
+                  <span>🔥 Easy</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recipe Card 4 */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-shadow">
+              <div className="relative h-64 overflow-hidden">
+                <img
+                  src="/recipes/picai25.jpeg"
+                  alt="Ethiopian Injera"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-4 right-4">
+                  <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-800">
+                    ⭐ 4.6
+                  </span>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Ethiopian Injera
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Traditional sourdough flatbread with unique tangy flavor
+                </p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>🕐 3 days</span>
+                  <span>👥 8 servings</span>
+                  <span>🔥 Hard</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recipe Card 5 */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-shadow">
+              <div className="relative h-64 overflow-hidden">
+                <img
+                  src="/recipes/picai30.jpeg"
+                  alt="Moroccan Tagine"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-4 right-4">
+                  <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-800">
+                    ⭐ 4.8
+                  </span>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Moroccan Chicken Tagine
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Slow-cooked chicken with aromatic spices and preserved lemons
+                </p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>🕐 2hrs</span>
+                  <span>👥 6 servings</span>
+                  <span>🔥 Medium</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recipe Card 6 */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-shadow">
+              <div className="relative h-64 overflow-hidden">
+                <img
+                  src="/recipes/picai35.jpeg"
+                  alt="South African Bobotie"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-4 right-4">
+                  <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-800">
+                    ⭐ 4.5
+                  </span>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  South African Bobotie
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Spiced mince meat bake with egg topping and aromatic curry
+                  flavors
+                </p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>🕐 1hr 15mins</span>
+                  <span>👥 6 servings</span>
+                  <span>🔥 Medium</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* View More Button */}
+          <div className="text-center mt-12">
+            <Button
+              onClick={() => navigate("/recipe-discovery")}
+              variant="outline"
+              size="lg"
+              className="border-primary text-primary hover:bg-primary hover:text-white"
+            >
+              Discover More Recipes
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 bg-primary text-white">
         <div className="container-max px-4 text-center">

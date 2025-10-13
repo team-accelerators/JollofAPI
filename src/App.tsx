@@ -8,6 +8,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { ToastProvider } from "./components/Toast";
 import Home from "./pages/Home";
 import Recipe from "./pages/Recipe";
+import RecipeDiscovery from "./pages/RecipeDiscovery";
+import VendorMarketplace from "./pages/VendorMarketplace";
 import About from "./pages/About";
 import Ingredients from "./pages/Ingredients";
 import SignIn from "./pages/SignIn";
@@ -25,6 +27,8 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/recipe-generator" element={<Recipe />} />
+                <Route path="/recipe-discovery" element={<RecipeDiscovery />} />
+                <Route path="/marketplace" element={<VendorMarketplace />} />
                 <Route path="/ingredients" element={<Ingredients />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/signin" element={<SignIn />} />
