@@ -1,9 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 html, body, #root {
   height: 100%;
+  font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Design System Utilities */
+.neumorphic {
+  @apply shadow-neumorphic bg-neutral-50;
+}
+
+.neumorphic-inset {
+  @apply shadow-neumorphic-inset bg-neutral-100;
+}
+
+.btn-primary {
+  @apply bg-primary hover:bg-primary/90 text-white rounded-2xl px-6 py-3 font-medium transition-all duration-200 shadow-soft hover:shadow-medium;
+}
+
+.btn-secondary {
+  @apply bg-secondary hover:bg-secondary/90 text-white rounded-2xl px-6 py-3 font-medium transition-all duration-200 shadow-soft hover:shadow-medium;
+}
+
+.btn-outline {
+  @apply border-2 border-neutral-300 hover:border-primary text-neutral-600 hover:text-primary bg-white hover:bg-primary/5 rounded-2xl px-6 py-3 font-medium transition-all duration-200 shadow-soft hover:shadow-medium;
+}
+
+.card {
+  @apply bg-white rounded-2xl shadow-soft hover:shadow-medium transition-all duration-200 border border-neutral-200;
+}
+
+.input-field {
+  @apply border-2 border-neutral-300 focus:border-primary rounded-xl px-4 py-3 transition-all duration-200 focus:ring-2 focus:ring-primary/20 outline-none;
 }
 
 /* small helper */
