@@ -62,7 +62,7 @@ export default function RecipeDiscovery() {
           title: "Classic Jollof Rice",
           description:
             "The crown jewel of West African cuisine, a one-pot rice dish cooked with tomatoes, onions, peppers, and aromatic spices. Each country has its own variation, creating friendly rivalries over the 'best' Jollof.",
-          imageUrl: "/recipes/picai.jpeg",
+          imageUrl: "/recipes/picai29.jpeg",
           prepTime: 30,
           cookTime: 45,
           servings: 6,
@@ -77,7 +77,7 @@ export default function RecipeDiscovery() {
           title: "Fufu with Egusi Soup",
           description:
             "A staple starchy side made from boiled and pounded plantains, cassava, or yams served with rich, hearty soup made with ground melon seeds and leafy vegetables.",
-          imageUrl: "/recipes/picai10.jpeg",
+          imageUrl: "/images/fufu and egusi soup.png",
           prepTime: 60,
           cookTime: 90,
           servings: 8,
@@ -92,7 +92,7 @@ export default function RecipeDiscovery() {
           title: "Ghanaian Kelewele",
           description:
             "Spicy fried plantain cubes seasoned with ginger, nutmeg, cloves, and cayenne pepper. A popular street food with a sweet and spicy flavor profile.",
-          imageUrl: "/recipes/picai15.jpeg",
+          imageUrl: "/images/ghana kelewele.png",
           prepTime: 15,
           cookTime: 10,
           servings: 4,
@@ -107,7 +107,7 @@ export default function RecipeDiscovery() {
           title: "Ethiopian Injera with Doro Wat",
           description:
             "Spongy, tangy sourdough flatbread made from teff flour served with spicy chicken stew simmered in berbere spice blend, onions, and hard-boiled eggs.",
-          imageUrl: "/recipes/picai8.jpeg",
+          imageUrl: "/images/ethiopian injera.png",
           prepTime: 45,
           cookTime: 120,
           servings: 8,
@@ -122,7 +122,7 @@ export default function RecipeDiscovery() {
           title: "Moroccan Chicken Tagine",
           description:
             "Slow-cooked stew named after the conical clay pot it's cooked in. Features chicken, vegetables, and dried fruits with aromatic spices like cinnamon and ginger.",
-          imageUrl: "/recipes/picai16.jpeg",
+          imageUrl: "/images/moroccan chicken.png",
           prepTime: 45,
           cookTime: 75,
           servings: 6,
@@ -137,7 +137,7 @@ export default function RecipeDiscovery() {
           title: "South African Bobotie",
           description:
             "Spiced mince meat casserole topped with egg custard, featuring curry spices, almonds, and raisins. South Africa's beloved national dish with Cape Malay influences.",
-          imageUrl: "/recipes/picai22.jpeg",
+          imageUrl: "/images/south africa bobotie.png",
           prepTime: 30,
           cookTime: 45,
           servings: 6,
@@ -152,7 +152,7 @@ export default function RecipeDiscovery() {
           title: "Senegalese Thieboudienne",
           description:
             "Senegal's national dish featuring fish, rice, and vegetables cooked in a rich tomato-based sauce with tamarind and various West African spices.",
-          imageUrl: "/recipes/picai30.jpeg",
+          imageUrl: "/images/senegalese thiebouudienne.png",
           prepTime: 45,
           cookTime: 60,
           servings: 8,
@@ -166,8 +166,8 @@ export default function RecipeDiscovery() {
           id: "8",
           title: "Nigerian Suya",
           description:
-            "Spicy grilled meat skewers coated with yaji (spicy peanut spice mix) containing ground peanuts, ginger, garlic, and hot peppers. Popular street food across Nigeria.",
-          imageUrl: "/recipes/picai25.jpeg",
+            "Sweet fried plantain slices, golden and caramelized, enjoyed as a snack or side dish across Nigeria. Often paired with spicy meats or enjoyed on their own.",
+          imageUrl: "/images/nigeria suya.png",
           prepTime: 20,
           cookTime: 15,
           servings: 4,
@@ -179,25 +179,25 @@ export default function RecipeDiscovery() {
         },
         {
           id: "9",
-          title: "Ivorian Attiéké",
+          title: "Nigerian Amala and Ewedu",
           description:
-            "Fermented cassava couscous with a light, fluffy texture, often served with grilled fish and spicy sauce. A staple dish from Côte d'Ivoire.",
-          imageUrl: "/recipes/picai35.jpeg",
-          prepTime: 20,
-          cookTime: 25,
+            "Traditional Yoruba meal featuring smooth yam flour dumplings (amala) served with nutritious jute leaf soup (ewedu) and gbegiri. A beloved comfort food.",
+          imageUrl: "/images/Amla and ewedu.png",
+          prepTime: 30,
+          cookTime: 45,
           servings: 6,
           difficulty: "Medium",
-          cuisine: "Ivorian",
-          rating: 4.4,
-          reviews: 76,
-          dietary: ["Vegan", "Gluten-Free"],
+          cuisine: "Nigerian",
+          rating: 4.8,
+          reviews: 245,
+          dietary: ["Gluten-Free", "High-Fiber", "Traditional"],
         },
         {
           id: "10",
           title: "Cameroonian Ndolé",
           description:
             "National dish featuring bitter leaves, groundnuts (peanuts), and various proteins like fish or meat in a rich, creamy sauce. Cameroon's pride and joy.",
-          imageUrl: "/recipes/picai20.jpeg",
+          imageUrl: "/images/ndole.png",
           prepTime: 60,
           cookTime: 90,
           servings: 10,
@@ -212,7 +212,7 @@ export default function RecipeDiscovery() {
           title: "Tanzanian Pilau",
           description:
             "Fragrant spiced rice dish cooked with meat, featuring cardamom, cinnamon, cloves, and other aromatic spices influenced by Arabic and Indian cuisines.",
-          imageUrl: "/recipes/picai18.jpeg",
+          imageUrl: "/images/tan.png",
           prepTime: 30,
           cookTime: 45,
           servings: 6,
@@ -227,7 +227,7 @@ export default function RecipeDiscovery() {
           title: "Ethiopian Kitfo",
           description:
             "Ethiopian steak tartare - minced raw beef served with mitmita spice and sometimes cottage cheese. Considered a delicacy and often served at special occasions.",
-          imageUrl: "/recipes/picai28.jpeg",
+          imageUrl: "/images/ethiopian kitfo.png",
           prepTime: 15,
           cookTime: 0,
           servings: 2,
@@ -242,7 +242,7 @@ export default function RecipeDiscovery() {
           title: "Ghanaian Banku with Tilapia",
           description:
             "Fermented corn and cassava dough cooked into a smooth, slightly sour dumpling. Traditionally served with grilled tilapia and hot pepper sauce.",
-          imageUrl: "/recipes/picai5.jpeg",
+          imageUrl: "/images/ghana banku.png",
           prepTime: 30,
           cookTime: 45,
           servings: 4,
@@ -257,7 +257,7 @@ export default function RecipeDiscovery() {
           title: "Cape Verdean Cachupa",
           description:
             "Hearty stew with corn, beans, vegetables, and meat or fish. Considered the national dish of Cape Verde, often prepared for family gatherings.",
-          imageUrl: "/recipes/picai12.jpeg",
+          imageUrl: "/images/capa verdean cachupa.png",
           prepTime: 40,
           cookTime: 120,
           servings: 8,
@@ -272,7 +272,7 @@ export default function RecipeDiscovery() {
           title: "Malian Tô with Sauce",
           description:
             "Thick millet or sorghum porridge served with various sauces and vegetables. A staple food in Sahel countries, providing essential nutrition.",
-          imageUrl: "/recipes/picai33p.jpeg",
+          imageUrl: "/images/maclian T6 with sauce.png",
           prepTime: 10,
           cookTime: 30,
           servings: 6,
@@ -287,7 +287,7 @@ export default function RecipeDiscovery() {
           title: "Kenyan Nyama Choma",
           description:
             "Grilled meat (usually goat or beef) marinated with spices and cooked over an open fire. Often served with ugali and vegetables at social gatherings.",
-          imageUrl: "/recipes/picai40.jpeg",
+          imageUrl: "/images/kenya nyama chomo.png",
           prepTime: 30,
           cookTime: 45,
           servings: 6,
@@ -299,25 +299,25 @@ export default function RecipeDiscovery() {
         },
         {
           id: "17",
-          title: "Egyptian Ful Medames",
+          title: "Nigerian Fisherman Soup",
           description:
-            "Traditional breakfast of slow-cooked fava beans seasoned with garlic, lemon juice, and olive oil, often topped with tomatoes and onions.",
-          imageUrl: "/recipes/picai6.jpeg",
-          prepTime: 15,
-          cookTime: 60,
-          servings: 4,
-          difficulty: "Easy",
-          cuisine: "Egyptian",
-          rating: 4.4,
-          reviews: 78,
-          dietary: ["Vegan", "High-Protein", "High-Fiber"],
+            "Rich seafood soup with fresh fish, prawns, periwinkles, and native vegetables cooked in palm oil. A coastal delicacy from the Niger Delta region.",
+          imageUrl: "/images/fisherman soup.png",
+          prepTime: 25,
+          cookTime: 40,
+          servings: 6,
+          difficulty: "Medium",
+          cuisine: "Nigerian",
+          rating: 4.8,
+          reviews: 167,
+          dietary: ["High-Protein", "Dairy-Free", "Seafood"],
         },
         {
           id: "18",
           title: "Congolese Saka Saka",
           description:
             "Cassava leaves cooked with peanut sauce, palm oil, and various proteins. Also known as pondu, it's a staple across Central Africa.",
-          imageUrl: "/recipes/picai9.jpeg",
+          imageUrl: "/images/congolese saka.png",
           prepTime: 45,
           cookTime: 75,
           servings: 8,
@@ -326,6 +326,156 @@ export default function RecipeDiscovery() {
           rating: 4.6,
           reviews: 92,
           dietary: ["High-Protein", "Traditional"],
+        },
+        {
+          id: "19",
+          title: "Nigerian Pounded Yam with Egusi",
+          description:
+            "Smooth, stretchy yam dough served with rich egusi soup made from ground melon seeds, leafy vegetables, and assorted meats or fish.",
+          imageUrl: "/recipes/picai41.jpeg",
+          prepTime: 30,
+          cookTime: 90,
+          servings: 6,
+          difficulty: "Hard",
+          cuisine: "Nigerian",
+          rating: 4.9,
+          reviews: 278,
+          dietary: ["Gluten-Free", "High-Protein"],
+        },
+        {
+          id: "20",
+          title: "Nigerian Pepper Soup",
+          description:
+            "Spicy, aromatic broth made with various meats, fish, or goat meat, seasoned with African pepper, uziza seeds, and traditional herbs.",
+          imageUrl: "/images/nigeria pepper soup.png",
+          prepTime: 20,
+          cookTime: 45,
+          servings: 4,
+          difficulty: "Medium",
+          cuisine: "Nigerian",
+          rating: 4.7,
+          reviews: 189,
+          dietary: ["High-Protein", "Dairy-Free", "Low-Carb"],
+        },
+        {
+          id: "21",
+          title: "Nigerian Akara (Bean Cakes)",
+          description:
+            "Deep-fried bean fritters made from black-eyed peas, onions, and peppers. A popular breakfast food and street snack across Nigeria.",
+          imageUrl: "/images/nigeria akara.png",
+          prepTime: 30,
+          cookTime: 20,
+          servings: 6,
+          difficulty: "Medium",
+          cuisine: "Nigerian",
+          rating: 4.6,
+          reviews: 234,
+          dietary: ["Vegan", "High-Protein", "Gluten-Free"],
+        },
+        {
+          id: "22",
+          title: "Nigerian Moi Moi",
+          description:
+            "Steamed bean pudding made from black-eyed peas, spices, and vegetables. Often served with rice or eaten as a side dish.",
+          imageUrl: "/images/nigeria moimoi.png",
+          prepTime: 45,
+          cookTime: 60,
+          servings: 8,
+          difficulty: "Medium",
+          cuisine: "Nigerian",
+          rating: 4.8,
+          reviews: 312,
+          dietary: ["Vegan", "High-Protein", "Gluten-Free"],
+        },
+        {
+          id: "23",
+          title: "Nigerian Bitterleaf Soup",
+          description:
+            "Traditional soup made with bitter leaves, assorted meats, stockfish, and palm nut extract. A delicacy from Eastern Nigeria.",
+          imageUrl: "/images/bitterleaf soup.png",
+          prepTime: 40,
+          cookTime: 75,
+          servings: 6,
+          difficulty: "Hard",
+          cuisine: "Nigerian",
+          rating: 4.7,
+          reviews: 156,
+          dietary: ["High-Protein", "Traditional"],
+        },
+        {
+          id: "24",
+          title: "Nigerian Chin Chin",
+          description:
+            "Sweet, crunchy fried pastry cubes flavored with nutmeg and vanilla. A beloved snack for celebrations and everyday enjoyment.",
+          imageUrl: "/images/nigeria chin chin.png",
+          prepTime: 45,
+          cookTime: 30,
+          servings: 10,
+          difficulty: "Easy",
+          cuisine: "Nigerian",
+          rating: 4.5,
+          reviews: 198,
+          dietary: ["Vegetarian", "Sweet"],
+        },
+        {
+          id: "25",
+          title: "Nigerian Okra Soup",
+          description:
+            "Viscous soup made with fresh okra, assorted meats, seafood, and traditional seasonings. Often eaten with pounded yam or fufu.",
+          imageUrl: "/images/okro soup.png",
+          prepTime: 25,
+          cookTime: 50,
+          servings: 6,
+          difficulty: "Medium",
+          cuisine: "Nigerian",
+          rating: 4.6,
+          reviews: 167,
+          dietary: ["High-Protein", "Gluten-Free"],
+        },
+        {
+          id: "26",
+          title: "Nigerian Efo Riro",
+          description:
+            "Yoruba spinach stew with bell peppers, tomatoes, onions, and assorted meats or fish. Rich in vegetables and bursting with flavor.",
+          imageUrl: "/images/nigeria efo riro.png",
+          prepTime: 30,
+          cookTime: 45,
+          servings: 6,
+          difficulty: "Medium",
+          cuisine: "Nigerian",
+          rating: 4.8,
+          reviews: 223,
+          dietary: ["High-Protein", "High-Fiber"],
+        },
+        {
+          id: "27",
+          title: "Nigerian Plantain Porridge",
+          description:
+            "Hearty one-pot meal with ripe plantains, vegetables, spices, and optional protein. Comfort food that's both nutritious and satisfying.",
+          imageUrl: "/images/porridge plaintain.png",
+          prepTime: 20,
+          cookTime: 35,
+          servings: 4,
+          difficulty: "Easy",
+          cuisine: "Nigerian",
+          rating: 4.7,
+          reviews: 189,
+          dietary: ["Vegan Option", "Gluten-Free", "High-Fiber"],
+        },
+        {
+          id: "28",
+          title: "Nigerian Ofada Rice with Ayamase",
+          description:
+            "Local unpolished rice served with spicy green pepper sauce (ayamase) containing assorted meats and traditional seasonings.",
+          imageUrl: "/images/nigeria ofada rice with ayamase.png",
+          prepTime: 40,
+          cookTime: 60,
+          servings: 6,
+          difficulty: "Hard",
+          cuisine: "Nigerian",
+          rating: 4.9,
+          reviews: 145,
+          dietary: ["High-Protein", "Spicy", "Traditional"],
         },
       ];
 
@@ -601,19 +751,19 @@ export default function RecipeDiscovery() {
             {currentRecipes.map((recipe) => (
               <div
                 key={recipe.id}
-                className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded-2xl shadow-soft hover:shadow-medium transition-all duration-300 cursor-pointer flex flex-col h-full neumorphic"
                 onClick={() => navigate(`/recipe/${recipe.id}`)}
               >
                 {/* Recipe Image */}
-                <div className="relative h-48 bg-gray-200">
+                <div className="relative h-48 bg-neutral-200 rounded-t-2xl overflow-hidden">
                   {recipe.imageUrl ? (
                     <img
                       src={recipe.imageUrl}
                       alt={recipe.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <div className="w-full h-full flex items-center justify-center text-neutral-400">
                       <svg
                         className="w-12 h-12"
                         fill="currentColor"
@@ -663,20 +813,30 @@ export default function RecipeDiscovery() {
                 </div>
 
                 {/* Recipe Info */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                    {recipe.title}
+                <div className="p-6 flex-1 flex flex-col">
+                  <h3 className="font-display font-semibold text-neutral-900 mb-2 text-lg leading-tight">
+                    {recipe.title.length > 35
+                      ? recipe.title.substring(0, 35) + "..."
+                      : recipe.title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {recipe.description}
+                  <p className="text-neutral-600 text-sm mb-4 flex-1 leading-relaxed">
+                    {recipe.description.length > 80
+                      ? recipe.description.substring(0, 80) + "..."
+                      : recipe.description}
                   </p>
 
                   {/* Recipe Meta */}
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                    <span>{recipe.prepTime + recipe.cookTime} min</span>
-                    <span>{recipe.servings} servings</span>
+                  <div className="flex items-center justify-between text-sm text-neutral-500 mb-4 bg-neutral-50 rounded-xl p-3">
+                    <div className="flex items-center gap-1">
+                      <span className="text-primary">⏱️</span>
+                      <span>{recipe.prepTime + recipe.cookTime} min</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-secondary">👥</span>
+                      <span>{recipe.servings}</span>
+                    </div>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs ${
+                      className={`px-3 py-1 rounded-xl text-xs font-display font-medium ${
                         difficultyColors[recipe.difficulty]
                       }`}
                     >
@@ -685,20 +845,20 @@ export default function RecipeDiscovery() {
                   </div>
 
                   {/* Rating and Cuisine */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">
+                  <div className="flex items-center justify-between mt-auto">
+                    <span className="text-sm font-display font-medium text-primary bg-primary/10 px-3 py-1 rounded-xl">
                       {recipe.cuisine}
                     </span>
                     {recipe.rating && (
-                      <div className="flex items-center">
+                      <div className="flex items-center bg-secondary/10 px-3 py-1 rounded-xl">
                         <svg
-                          className="w-4 h-4 text-yellow-400"
+                          className="w-4 h-4 text-secondary"
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
-                        <span className="ml-1 text-sm text-gray-600">
+                        <span className="ml-1 text-sm font-display font-medium text-secondary">
                           {recipe.rating}
                         </span>
                       </div>
