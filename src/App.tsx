@@ -9,6 +9,7 @@ import { ToastProvider } from "./components/Toast";
 import Home from "./pages/Home";
 import Recipe from "./pages/Recipe";
 import RecipeDiscovery from "./pages/RecipeDiscovery";
+import RecipeDetail from "./pages/RecipeDetail";
 import VendorMarketplace from "./pages/VendorMarketplace";
 import About from "./pages/About";
 import Ingredients from "./pages/Ingredients";
@@ -28,6 +29,7 @@ export default function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/recipe-generator" element={<Recipe />} />
                 <Route path="/recipe-discovery" element={<RecipeDiscovery />} />
+                <Route path="/recipe/:id" element={<RecipeDetail />} />
                 <Route path="/marketplace" element={<VendorMarketplace />} />
                 <Route path="/ingredients" element={<Ingredients />} />
                 <Route path="/about" element={<About />} />
