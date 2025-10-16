@@ -3,9 +3,10 @@ import "./jobs/vendorCron";
 import dotenv from 'dotenv';
 import app from './server';
 import {connectDB} from '../config/connectDB'
-
+import path from 'path';
 import cron from 'node-cron';
 import axios from 'axios';
+import express from "express";
 
 const PORT = process.env.PORT || 5000;
 dotenv.config()
@@ -19,6 +20,12 @@ cron.schedule('*/1440 * * * *', async () => {
     console.error('Ping failed', err);
   }
 });
+
+// serve the static swagger file
+app.use(
+  "/swagger.json",
+  express.static(path.join(__dirname, "docs/swagger.json"))
+);
 
 const MONGO_URL = process.env.MONGO_URI
  const startServer  = async () => {
