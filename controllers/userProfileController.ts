@@ -82,9 +82,27 @@ export const updateUserProfile = async (req: Request, res: Response) => {
   }
 };
 
+
+ 
+ /**
+ * @desc    Get Get authorized User 
+ * @route   GET /api/users/me
+ * @access  Private/Admin
+ */
+export const  getAuthUser = async (req:Request,  res:Response) => {
+
+  if (!req.user){
+   return res.status(401).json({ success: false, message:`No User Found`})
+  }
+console.log(`my ${req.user}`)
+ return  res.status(200).json({ success: true, message:`Welcome ${req.user}`, user: req.user })
+
+  }
+
+
 /**
  * @desc    Get all users (Admin only)
- * @route   GET /api/users
+ * @route   GET /api/users/all
  * @access  Private/Admin
  */
 export const getAllUsers = async (req: Request, res: Response) => {

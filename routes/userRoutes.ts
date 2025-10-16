@@ -68,6 +68,30 @@ router.get("/profile", protect, getUserProfile);
  *         description: Unauthorized.
  */
 router.put("/profile", protect, updateUserProfile);
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get authenticated user 
+ *     description:  view loggedin  registered users.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all users.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       403:
+ *         description: Forbidden — Admin access required.
+ */
+router.get("/me", protect,  getAllUsers);
+
+
 
 /**
  * @swagger
@@ -90,6 +114,8 @@ router.put("/profile", protect, updateUserProfile);
  *       403:
  *         description: Forbidden — Admin access required.
  */
-router.get("/", protect, adminOnly, getAllUsers);
+router.get("/all", protect, adminOnly, getAllUsers);
+
+
 
 export default router;
