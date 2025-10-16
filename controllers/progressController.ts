@@ -1,6 +1,6 @@
 // src/controllers/progressController.ts
 import { Request, Response } from "express";
-import UserProgress from "../models/UserProgress";
+import UserProgress from "../models/userProgress";
 import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });

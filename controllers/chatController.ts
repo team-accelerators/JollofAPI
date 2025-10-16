@@ -1,7 +1,7 @@
 // src/controllers/chatController.ts
 import { Request, Response } from "express";
-import ChatMessage from "../models/ChatMessage";
-import UserProgress from "../models/UserProgress";
+import ChatMessage from "../models/chatMessage";
+import UserProgress from "../models/userProgress";
 import OpenAI from "openai";
 
 import dotenv from "dotenv";

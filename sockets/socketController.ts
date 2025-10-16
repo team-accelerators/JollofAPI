@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { RedisClientType } from "redis";
-import UserProgress from "../models/UserProgress";
-import ChatMessage from "../models/ChatMessage";
+import UserProgress from "../models/userProgress";
+import ChatMessage from "../models/chatMessage";
 import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });

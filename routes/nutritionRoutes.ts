@@ -1,6 +1,6 @@
 import express from "express";
 import { protect } from "../middlewares/authMiddleware";
-import { analyzeNutrition } from "../controllers/NutritionController";
+import { analyzeNutrition } from "../controllers/nutritionController";
 
 const router = express.Router();
 
