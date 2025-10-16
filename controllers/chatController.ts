@@ -4,7 +4,10 @@ import ChatMessage from "../models/ChatMessage";
 import UserProgress from "../models/UserProgress";
 import OpenAI from "openai";
 
-// create OpenAI client
+import dotenv from "dotenv";
+dotenv.config();
+
+// create OpenAI client                     
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // POST /api/chat/message

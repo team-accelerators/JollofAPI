@@ -3,45 +3,36 @@
   "info": {
     "title": "JollofAI Backend API",
     "version": "1.0.0",
-    "description": "API documentation for JollofAI – a smart cooking assistant integrating AI-based recipe recommendations, pantry recognition, vendor discovery, and conversational cooking guidance."
+    "description": "Comprehensive API documentation for JollofAI — the AI-powered smart cooking assistant with recipes, nutrition, cook-alongs, and lifestyle integrations."
   },
   "servers": [
-    {
-      "url": "http://localhost:5000/api",
-      "description": "Local development server"
-    },
-    {
-    "url": "https://jollofapi.onrender.com/api",
-    "description": "Live production server"
-  }
+    { "url": "http://localhost:5000/api", "description": "Local Development Server" },
+    { "url": "https://jollofai.onrender.com/api", "description": "Production Server" }
   ],
   "components": {
     "securitySchemes": {
-      "BearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      }
+      "BearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
     }
   },
-  "security": [
-    {
-      "BearerAuth": []
-    }
-  ],
+  "security": [{ "BearerAuth": [] }],
   "tags": [
-    { "name": "Auth", "description": "Authentication and user management" },
-    { "name": "Recipes", "description": "Recipe management and recommendations" },
-    { "name": "Pantry", "description": "AI-powered pantry item detection and management" },
-    { "name": "Vendors", "description": "Local food vendor discovery" },
-    { "name": "Chat", "description": "Conversational cooking assistant" },
-    { "name": "Progress", "description": "Track cooking steps and session mode" }
+    { "name": "Auth", "description": "Authentication and account management" },
+    { "name": "Users", "description": "User profiles, preferences, and admin management" },
+    { "name": "Recipes", "description": "Recipe CRUD, discovery, and AI recommendations" },
+    { "name": "Vendors", "description": "Vendor listings, ratings, and discovery" },
+    { "name": "Community", "description": "User shared recipes, likes, and comments" },
+    { "name": "Cook-Alongs", "description": "Live cook-along sessions and timers" },
+    { "name": "Meal Plans", "description": "AI meal planning and dietary tracking" },
+    { "name": "Nutrition", "description": "Nutrition data, insights, and dietary filters" },
+    { "name": "Progress", "description": "User meal tracking and history" },
+    { "name": "Chat", "description": "Chat and voice-based cooking assistant" },
+    { "name": "Pantry", "description": "Pantry management and AI item recognition" }
   ],
   "paths": {
     "/auth/register": {
       "post": {
         "tags": ["Auth"],
-        "summary": "Register a new user",
+        "summary": "Register new user",
         "requestBody": {
           "required": true,
           "content": {
@@ -51,66 +42,70 @@
                 "properties": {
                   "name": { "type": "string" },
                   "email": { "type": "string" },
-                  "password": { "type": "string" },
-                  "dietaryPreferences": { "type": "array", "items": { "type": "string" } },
-                  "skillLevel": { "type": "string" },
-                  "mealFrequency": { "type": "string" },
-                  "prefersQuickMeals": { "type": "boolean" },
-                  "culturalBackground": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "201": { "description": "User registered successfully" } }
-      }
-    },
-    "/auth/login": {
-      "post": {
-        "tags": ["Auth"],
-        "summary": "Login user and return JWT token in cookie",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": { "type": "string" },
                   "password": { "type": "string" }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Login successful" } }
+        "responses": {
+          "201": { "description": "User registered successfully" },
+          "400": { "description": "Invalid input" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login user and return JWT token",
+        "responses": {
+          "200": { "description": "Login successful" },
+          "401": { "description": "Invalid credentials" }
+        }
       }
     },
     "/auth/google": {
       "post": {
         "tags": ["Auth"],
-        "summary": "Authenticate with Google OAuth",
-        "responses": { "200": { "description": "Google authentication successful" } }
+        "summary": "Authenticate user via Google OAuth",
+        "responses": { "200": { "description": "Google login success" } }
       }
     },
-    "/auth/reset-password": {
+    "/auth/forgot-password": {
       "post": {
         "tags": ["Auth"],
-        "summary": "Request password reset",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Reset link sent" } }
+        "summary": "Send password reset email",
+        "responses": { "200": { "description": "Reset email sent" } }
+      }
+    },
+    "/auth/reset-password/{token}": {
+      "put": {
+        "tags": ["Auth"],
+        "summary": "Reset password using token",
+        "parameters": [
+          { "name": "token", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Password reset successful" } }
+      }
+    },
+
+    "/users/profile": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get current user profile with preferences",
+        "responses": { "200": { "description": "Profile fetched successfully" } }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update user profile and preferences",
+        "responses": { "200": { "description": "Profile updated successfully" } }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Admin: Get all users",
+        "responses": { "200": { "description": "List of all users" } }
       }
     },
 
@@ -118,219 +113,125 @@
       "get": {
         "tags": ["Recipes"],
         "summary": "Get all recipes",
-        "responses": { "200": { "description": "List of recipes" } }
+        "responses": { "200": { "description": "Recipes retrieved" } }
       },
       "post": {
         "tags": ["Recipes"],
-        "summary": "Create a new recipe (Admin only)",
-        "security": [{ "BearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "title": { "type": "string" },
-                  "ingredients": { "type": "array", "items": { "type": "string" } },
-                  "instructions": { "type": "string" },
-                  "image": { "type": "string", "format": "binary" }
-                }
-              }
-            }
-          }
-        },
+        "summary": "Create a new recipe (admin only)",
         "responses": { "201": { "description": "Recipe created" } }
       }
     },
-    "/recipes/{id}": {
+    "/recipes/for-you": {
       "get": {
         "tags": ["Recipes"],
-        "summary": "Get recipe by ID",
-        "parameters": [{ "in": "path", "name": "id", "schema": { "type": "string" }, "required": true }],
-        "responses": { "200": { "description": "Recipe details" } }
-      },
-      "put": {
-        "tags": ["Recipes"],
-        "summary": "Update recipe (Admin only)",
-        "security": [{ "BearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "schema": { "type": "string" }, "required": true }],
-        "responses": { "200": { "description": "Recipe updated" } }
-      },
-      "delete": {
-        "tags": ["Recipes"],
-        "summary": "Delete recipe (Admin only)",
-        "security": [{ "BearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "schema": { "type": "string" }, "required": true }],
-        "responses": { "200": { "description": "Recipe deleted" } }
-      }
-    },
-    "/recipes/foryou": {
-      "get": {
-        "tags": ["Recipes"],
-        "summary": "Get personalized recipe recommendations",
-        "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Recommended recipes" } }
-      }
-    },
-    "/recipes/match-ingredients": {
-      "post": {
-        "tags": ["Recipes"],
-        "summary": "Match ingredients to recipes",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "type": "object", "properties": { "ingredients": { "type": "array", "items": { "type": "string" } } } }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Matching recipes" } }
+        "summary": "Get AI-personalized recipes for user",
+        "parameters": [{ "name": "userId", "in": "query", "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Recommended recipes fetched" } }
       }
     },
 
-    "/pantry/upload": {
+    "/vendors": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "List all vendors",
+        "responses": { "200": { "description": "Vendors fetched" } }
+      },
       "post": {
-        "tags": ["Pantry"],
-        "summary": "Upload pantry image and detect items via AI",
-        "security": [{ "BearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "image": { "type": "string", "format": "binary" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "201": { "description": "Pantry items detected and saved" } }
+        "tags": ["Vendors"],
+        "summary": "Add a new vendor (Admin only)",
+        "responses": { "201": { "description": "Vendor created" } }
       }
     },
+
+    "/community": {
+      "get": {
+        "tags": ["Community"],
+        "summary": "Get all shared recipes",
+        "responses": { "200": { "description": "Community feed" } }
+      },
+      "post": {
+        "tags": ["Community"],
+        "summary": "Share a new recipe to the community",
+        "responses": { "201": { "description": "Recipe shared" } }
+      }
+    },
+    "/community/{id}/like": {
+      "post": {
+        "tags": ["Community"],
+        "summary": "Like or unlike a community recipe",
+        "parameters": [{ "name": "id", "in": "path", "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Like toggled" } }
+      }
+    },
+
+    "/cook-alongs": {
+      "get": {
+        "tags": ["Cook-Alongs"],
+        "summary": "Get all cook-along sessions",
+        "responses": { "200": { "description": "Sessions fetched" } }
+      },
+      "post": {
+        "tags": ["Cook-Alongs"],
+        "summary": "Create a new cook-along session",
+        "responses": { "201": { "description": "Session created" } }
+      }
+    },
+    "/cook-alongs/{id}/join": {
+      "post": {
+        "tags": ["Cook-Alongs"],
+        "summary": "Join a cook-along session via WebSocket",
+        "parameters": [{ "name": "id", "in": "path", "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Joined successfully" } }
+      }
+    },
+
+    "/meal-plans/generate": {
+      "post": {
+        "tags": ["Meal Plans"],
+        "summary": "Generate AI-based meal plan for user",
+        "responses": { "200": { "description": "Meal plan generated" } }
+      }
+    },
+
+    "/nutrition/insights": {
+      "get": {
+        "tags": ["Nutrition"],
+        "summary": "Get nutrition insights for user",
+        "responses": { "200": { "description": "Nutrition data fetched" } }
+      }
+    },
+
+    "/progress": {
+      "get": {
+        "tags": ["Progress"],
+        "summary": "Get user's progress or history",
+        "responses": { "200": { "description": "Progress fetched" } }
+      }
+    },
+
+    "/chat": {
+      "get": {
+        "tags": ["Chat"],
+        "summary": "Get chat history",
+        "responses": { "200": { "description": "Chats retrieved" } }
+      },
+      "post": {
+        "tags": ["Chat"],
+        "summary": "Send message to AI or user",
+        "responses": { "200": { "description": "Message sent" } }
+      }
+    },
+
     "/pantry": {
       "get": {
         "tags": ["Pantry"],
-        "summary": "Get all user pantry items",
-        "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "List of pantry items" } }
-      }
-    },
-    "/pantry/{id}": {
-      "delete": {
+        "summary": "Get user's pantry items",
+        "responses": { "200": { "description": "Pantry items retrieved" } }
+      },
+      "post": {
         "tags": ["Pantry"],
-        "summary": "Delete pantry item by ID",
-        "security": [{ "BearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "schema": { "type": "string" }, "required": true }],
-        "responses": { "200": { "description": "Item deleted" } }
-      }
-    },
-
-    "/vendors/sync": {
-      "post": {
-        "tags": ["Vendors"],
-        "summary": "Sync vendor data from external sources (Admin only)",
-        "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Vendors synced successfully" } }
-      }
-    },
-    "/vendors/vendor/nearby": {
-      "get": {
-        "tags": ["Vendors"],
-        "summary": "Get nearby vendors",
-        "parameters": [
-          { "in": "query", "name": "lat", "schema": { "type": "number" }, "required": true },
-          { "in": "query", "name": "lng", "schema": { "type": "number" }, "required": true }
-        ],
-        "responses": { "200": { "description": "Nearby vendors returned" } }
-      }
-    },
-    "/vendors/vendor/{id}": {
-      "get": {
-        "tags": ["Vendors"],
-        "summary": "Get vendor by ID",
-        "parameters": [{ "in": "path", "name": "id", "schema": { "type": "string" }, "required": true }],
-        "responses": { "200": { "description": "Vendor details" } }
-      }
-    },
-
-    "/chat/message": {
-      "post": {
-        "tags": ["Chat"],
-        "summary": "Send message to AI cooking assistant",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "userId": { "type": "string" },
-                  "recipeId": { "type": "string" },
-                  "content": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "AI response returned" } }
-      }
-    },
-    "/chat/history/{userId}/{recipeId}": {
-      "get": {
-        "tags": ["Chat"],
-        "summary": "Get chat history for user and recipe",
-        "parameters": [
-          { "in": "path", "name": "userId", "schema": { "type": "string" }, "required": true },
-          { "in": "path", "name": "recipeId", "schema": { "type": "string" }, "required": true }
-        ],
-        "responses": { "200": { "description": "Chat history" } }
-      }
-    },
-
-    "/progress/start": {
-      "post": {
-        "tags": ["Progress"],
-        "summary": "Start or resume cooking progress",
-        "security": [{ "BearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "recipeId": { "type": "string" },
-                  "mode": { "type": "string", "enum": ["voice", "text"] }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Progress started or resumed" } }
-      }
-    },
-    "/progress/toggle-mode": {
-      "post": {
-        "tags": ["Progress"],
-        "summary": "Toggle between voice and text mode",
-        "security": [{ "BearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "recipeId": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Mode toggled" } }
+        "summary": "Add or detect pantry item via AI",
+        "responses": { "201": { "description": "Pantry item added" } }
       }
     }
   }

@@ -1,11 +1,13 @@
 import express from "express";
+import passport from "passport";
+import "../config/passport"; // ensure GoogleStrategy is registered
 import {
-  registerUser,
+  register,
   loginUser,
-  googleAuth,
   requestPasswordReset,
   resetPassword,
   logoutUser,
+  googleCallback, // added from Google OAuth controller
 } from "../controllers/authController";
 import { protect, adminOnly } from "../middlewares/authMiddleware";
 
@@ -16,7 +18,7 @@ const router = express.Router();
  * @desc Register new user with onboarding details
  * @access Public
  */
-router.post("/register", registerUser);
+router.post("/register", register);
 
 /**
  * @route POST /api/auth/login
@@ -26,11 +28,28 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 
 /**
- * @route POST /api/auth/google
- * @desc Login or register user via Google OAuth
+ * @route GET /api/auth/google
+ * @desc Initiate Google OAuth login flow
  * @access Public
  */
-router.post("/google", googleAuth);
+router.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    prompt: "select_account",
+  })
+);
+
+/**
+ * @route GET /api/auth/google/callback
+ * @desc Google OAuth callback - handle Google login/register
+ * @access Public
+ */
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { session: false, failureRedirect: "/login" }),
+  googleCallback
+);
 
 /**
  * @route POST /api/auth/reset-password

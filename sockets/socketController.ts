@@ -28,10 +28,10 @@ export function registerSocketHandlers(io: Server, redis: RedisClientType) {
         userId: data.userId,
         recipeId: data.recipeId,
         mode: data.mode,
-        currentStep: data.currentStep.toString(), // Redis stores strings
+        currentStep: data.currentStep.toString(),
       };
       await redis.hSet(key, redisData);
-      await redis.expire(key, 60 * 60 * 4); // 4 hours TTL
+      await redis.expire(key, 60 * 60 * 4);
     }
 
     async function getSession(userId: string, recipeId: string): Promise<RedisSession | null> {
@@ -51,6 +51,7 @@ export function registerSocketHandlers(io: Server, redis: RedisClientType) {
     // Socket events
     // =============================
 
+    // 🔹 Start or resume a personal cooking session
     socket.on(
       "start",
       async (payload: { recipeId: string; recipeName?: string; mode?: "voice" | "text" }) => {
@@ -90,7 +91,6 @@ export function registerSocketHandlers(io: Server, redis: RedisClientType) {
             };
           }
 
-          // Save session to Redis
           await saveSession({
             userId,
             recipeId,
@@ -107,10 +107,10 @@ export function registerSocketHandlers(io: Server, redis: RedisClientType) {
       }
     );
 
+    // 🔹 Voice command navigation
     socket.on("voiceCommand", async (data: { recipeId: string; command: string }) => {
       const { recipeId, command } = data;
       const userId = user.userId;
-      const key = `session:${userId}:${recipeId}`;
       const session = await getSession(userId, recipeId);
       if (!session)
         return socket.emit("error", { message: "No active session found" });
@@ -120,35 +120,29 @@ export function registerSocketHandlers(io: Server, redis: RedisClientType) {
 
       if (cmd.includes("next")) {
         progress.currentStep++;
-        await progress.save();
-        session.currentStep = progress.currentStep;
-        await saveSession(session);
-      } else if (cmd.includes("repeat")) {
-        // do nothing, repeat current step
       } else if (cmd.includes("previous")) {
         progress.currentStep = Math.max(0, progress.currentStep - 1);
-        await progress.save();
-        session.currentStep = progress.currentStep;
-        await saveSession(session);
       }
+      await progress.save();
+      session.currentStep = progress.currentStep;
+      await saveSession(session);
 
       const step = progress.steps[progress.currentStep] || "🎉 Done cooking!";
       io.to(`${userId}:${recipeId}`).emit("instruction", { step });
     });
 
+    // 🔹 Personal or AI cooking chat
     socket.on("chatMessage", async (data: { recipeId: string; message: string }) => {
       const { recipeId, message } = data;
       const userId = user.userId;
 
-      // Save chat
       await ChatMessage.create({
         userId,
         recipeId,
-        message,
-        fromUser: true,
+        content: message,
+        from: "user",
       });
 
-      // AI reply
       const aiResponse = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
@@ -161,11 +155,50 @@ export function registerSocketHandlers(io: Server, redis: RedisClientType) {
       await ChatMessage.create({
         userId,
         recipeId,
-        message: reply,
-        fromUser: false,
+        content: reply,
+        from: "assistant",
       });
 
       socket.emit("chatReply", { message: reply });
+    });
+
+    // =============================
+    // 👩🏾‍🍳 COOK-ALONG MODE
+    // =============================
+
+    socket.on("joinCookAlong", async (recipeId: string) => {
+      socket.join(`cookalong:${recipeId}`);
+      io.to(`cookalong:${recipeId}`).emit("system", {
+        message: `${user.username || "Someone"} joined the cook-along! 👋`,
+      });
+    });
+
+    socket.on("cookAlongMessage", (data: { recipeId: string; message: string }) => {
+      io.to(`cookalong:${data.recipeId}`).emit("cookAlongChat", {
+        user: user.username || "Guest",
+        message: data.message,
+      });
+    });
+
+    // 🔹 Timer sync for cook-alongs (e.g., “start timer for step 3”)
+    socket.on("cookAlongTimer", (data: { recipeId: string; seconds: number; step: number }) => {
+      const { recipeId, seconds, step } = data;
+      io.to(`cookalong:${recipeId}`).emit("timerStart", {
+        step,
+        duration: seconds,
+        startedAt: Date.now(),
+      });
+
+      setTimeout(() => {
+        io.to(`cookalong:${recipeId}`).emit("timerComplete", { step });
+      }, seconds * 1000);
+    });
+
+    socket.on("leaveCookAlong", (recipeId: string) => {
+      socket.leave(`cookalong:${recipeId}`);
+      io.to(`cookalong:${recipeId}`).emit("system", {
+        message: `${user.username || "Someone"} left the cook-along.`,
+      });
     });
 
     socket.on("disconnect", () => {

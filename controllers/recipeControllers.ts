@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Recipe from "../models/recipe";
-import UserModel from "../models/user";
+import User from "../models/user";
 import { getOpenAIEmbedding } from "../utils/embedding";
 import { cosineSimilarity } from "../utils/cosine";
 import { generateRecipesFromOpenAI } from '../utils/openaiRecipes';
@@ -56,39 +56,60 @@ export const createRecipe = async (req: Request, res: Response) => {
 export const getForYouRecipes = async (req: Request, res: Response) => {
   const userId = req.query.userId as string;
 
-  if (!userId) return res.status(400).json({ error: "Missing userId in query" });
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId in query" });
+  }
 
   try {
-    const user = await UserModel.findById(userId);
+    // Fetch user with linked preferences
+    const user = await User.findById(userId).populate("preferences");
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const userProfileText = `
-      ${user.dietaryPreferences.join(", ")},
-      ${user.culturalBackground},
-      ${user.cookingHabits?.skillLevel},
-      ${user.cookingHabits?.prefersQuickMeals ? "quick meals" : ""},
-      ${user.cookingHabits?.mealFrequency}
-    `.trim();
+    const prefs = user.preferences as any;
 
+    // --- Construct profile context ---
+    const preferenceTextParts = [
+      ...(prefs?.dietaryPreferences || []),
+      prefs?.dietaryMode,
+      prefs?.culturalBackground,
+      prefs?.cookingHabits?.skillLevel,
+      prefs?.cookingHabits?.prefersQuickMeals ? "quick meals" : "",
+      prefs?.cookingHabits?.mealFrequency,
+      prefs?.fitnessGoals?.goalType,
+      prefs?.allergens?.length ? `Avoids: ${prefs.allergens.join(", ")}` : "",
+    ].filter(Boolean);
+
+    const userProfileText = preferenceTextParts.join(", ");
+
+    // --- Generate embedding for the user's preference profile ---
     const userEmbedding = await getOpenAIEmbedding(userProfileText);
+
+    // --- Retrieve recipes with existing embeddings ---
     const recipes = await Recipe.find({ embedding: { $exists: true } });
 
+    // --- Compute cosine similarity between user and each recipe ---
     const scored = recipes.map((recipe) => {
       const similarity = cosineSimilarity(userEmbedding, recipe.embedding || []);
       return { recipe, similarity };
     });
 
+    // --- Return top 20 recipes ---
     const topRecipes = scored
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, 20)
       .map((r) => r.recipe);
 
-    res.json(topRecipes);
+    res.json({
+      success: true,
+      count: topRecipes.length,
+      recommendations: topRecipes,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch personalized feed" });
+    console.error("Error generating personalized recipes:", err);
+    res.status(500).json({ error: "Failed to fetch personalized recipe feed" });
   }
 };
+
 
 /**
  * @desc Match ingredients to best-fitting recipes using AI

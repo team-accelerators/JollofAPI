@@ -3,7 +3,20 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import cors from "cors";
+
 import authRoutes from "../routes/authRoutes";
+import chatRoutes from "../routes/chatRoutes";
+import pantryRoutes from "../routes/pantryRoutes";
+import vendorRoutes from "../routes/vendorRoutes";
+import recipeRoutes from "../routes/recipeRoutes";
+import progressRoutes from '../routes/progressRoutes'
+import mealPlanRoutes from "../routes/mealPlanRoutes";
+import nutritionRoutes from "../routes/nutritionRoutes";
+import communityRoutes from "../routes/communityRoutes";
+import cookAlongRoutes from "../routes/cookAlongRoutes";
+import ratingRoutes from "../routes/ratingRoutes";
+import userRoutes from "../routes/userRoutes";
+
 import { protect } from "../middlewares/authMiddleware";
 
 dotenv.config();
@@ -30,6 +43,18 @@ mongoose
   .catch(console.error);
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/chat",  chatRoutes);
+app.use("/api/pantry",  pantryRoutes);
+app.use("/api/vendors",  vendorRoutes);
+app.use("/api/recipes",  recipeRoutes);
+app.use('/api/progress',  progressRoutes)
+app.use("/api/meal-plans",  mealPlanRoutes);
+app.use("/api/nutrition",  nutritionRoutes);
+app.use("/api/community",  communityRoutes);
+app.use("/api/cook-along",  cookAlongRoutes);
+app.use("/api/ratings",  ratingRoutes); 
+
 
 export default app;
 
