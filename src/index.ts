@@ -21,11 +21,6 @@ cron.schedule('*/1440 * * * *', async () => {
   }
 });
 
-// serve the static swagger file
-app.use(
-  "/swagger.json",
-  express.static(path.join(__dirname, "docs/swagger.json"))
-);
 
 const MONGO_URL = process.env.MONGO_URI
  const startServer  = async () => {

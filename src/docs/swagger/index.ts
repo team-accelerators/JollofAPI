@@ -26,13 +26,34 @@ const swaggerBase: OpenAPIV3.Document = {
   tags: []
 };
 
-// Merge all JSON route files
+
+// Merge all JSON route files safely
 fs.readdirSync(swaggerDir)
   .filter((file) => file.endsWith(".json"))
   .forEach((file) => {
     const filePath = path.join(swaggerDir, file);
-    const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    Object.assign(swaggerBase.paths, content.paths);
+
+    try {
+      const raw = fs.readFileSync(filePath, "utf-8").trim();
+
+      // skip empty files
+      if (!raw) {
+        console.warn(`⚠️ Skipping empty file: ${file}`);
+        return;
+      }
+
+      // parse JSON
+      const content = JSON.parse(raw);
+
+      if (content.paths && typeof content.paths === "object") {
+        Object.assign(swaggerBase.paths, content.paths);
+        console.log(`✅ Merged: ${file}`);
+      } else {
+        console.warn(`⚠️ No 'paths' key in: ${file}`);
+      }
+    } catch (err: any) {
+      console.error(`❌ Failed to parse ${file}: ${err.message}`);
+    }
   });
 
 export default swaggerBase;

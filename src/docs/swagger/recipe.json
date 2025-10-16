@@ -1,0 +1,54 @@
+{
+  "paths": {
+    "/recipes": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Get all recipes",
+        "responses": { "200": { "description": "List of recipes" } }
+      },
+      "post": {
+        "tags": ["Recipes"],
+        "summary": "Create new recipe (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Recipe created" } }
+      }
+    },
+    "/recipes/{id}": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Get recipe by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "schema": { "type": "string" }, "required": true }
+        ],
+        "responses": { "200": { "description": "Recipe details" } }
+      },
+      "put": {
+        "tags": ["Recipes"],
+        "summary": "Update recipe (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Recipe updated" } }
+      },
+      "delete": {
+        "tags": ["Recipes"],
+        "summary": "Delete recipe (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Recipe deleted" } }
+      }
+    },
+    "/recipes/foryou": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Get personalized recipe feed",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Personalized recipes" } }
+      }
+    },
+    "/recipes/match-ingredients": {
+      "post": {
+        "tags": ["Recipes"],
+        "summary": "Find recipes matching pantry ingredients",
+        "responses": { "200": { "description": "Matching recipes" } }
+      }
+    }
+  }
+}
