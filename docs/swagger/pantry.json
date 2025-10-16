@@ -1,0 +1,28 @@
+{
+  "paths": {
+    "/pantry/upload": {
+      "post": {
+        "tags": ["Pantry"],
+        "summary": "Upload pantry image for AI detection",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Items detected" } }
+      }
+    },
+    "/pantry": {
+      "get": {
+        "tags": ["Pantry"],
+        "summary": "Get all user pantry items",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Pantry items" } }
+      }
+    },
+    "/pantry/{id}": {
+      "delete": {
+        "tags": ["Pantry"],
+        "summary": "Delete a pantry item by ID",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Item deleted" } }
+      }
+    }
+  }
+}

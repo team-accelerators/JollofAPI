@@ -1,0 +1,19 @@
+{
+  "paths": {
+    "/nutrition/analyze": {
+      "post": {
+        "tags": ["Nutrition"],
+        "summary": "Analyze nutrition for a recipe or ingredients",
+        "responses": { "200": { "description": "Nutrition breakdown returned" } }
+      }
+    },
+    "/nutrition/recommend": {
+      "get": {
+        "tags": ["Nutrition"],
+        "summary": "Get dietary recommendations based on user profile",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Recommendations generated" } }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "paths": {
+    "/vendors/sync": {
+      "post": {
+        "tags": ["Vendors"],
+        "summary": "Sync vendor data (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Vendors synced" } }
+      }
+    },
+    "/vendors/nearby": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "Find nearby vendors by location",
+        "parameters": [
+          { "name": "lat", "in": "query", "schema": { "type": "number" }, "required": true },
+          { "name": "lng", "in": "query", "schema": { "type": "number" }, "required": true }
+        ],
+        "responses": { "200": { "description": "Nearby vendors" } }
+      }
+    },
+    "/vendors/{id}": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "Get vendor by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "schema": { "type": "string" }, "required": true }
+        ],
+        "responses": { "200": { "description": "Vendor details" } }
+      }
+    }
+  }
+}

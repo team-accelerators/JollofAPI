@@ -1,0 +1,37 @@
+{
+  "paths": {
+    "/community/posts": {
+      "get": {
+        "tags": ["Community"],
+        "summary": "Get all shared recipes or hacks",
+        "responses": { "200": { "description": "List of community posts" } }
+      },
+      "post": {
+        "tags": ["Community"],
+        "summary": "Create a new community post",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Post created" } }
+      }
+    },
+    "/community/posts/{id}/like": {
+      "post": {
+        "tags": ["Community"],
+        "summary": "Like a community post",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Post liked" } }
+      }
+    },
+    "/community/posts/{id}/comment": {
+      "post": {
+        "tags": ["Community"],
+        "summary": "Add a comment to a community post",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "201": { "description": "Comment added" } }
+      }
+    }
+  }
+}

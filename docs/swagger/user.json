@@ -1,0 +1,23 @@
+{
+  "paths": {
+    "/users/profile": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user profile with preferences",
+        "responses": { "200": { "description": "Profile fetched successfully" } }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update user profile and preferences",
+        "responses": { "200": { "description": "Profile updated successfully" } }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Admin: Get all users",
+        "responses": { "200": { "description": "List of all users" } }
+      }
+    }
+  }
+}

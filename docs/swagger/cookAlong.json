@@ -1,0 +1,37 @@
+{
+  "paths": {
+    "/cookalong": {
+      "get": {
+        "tags": ["CookAlong"],
+        "summary": "Get all cook-along events",
+        "responses": { "200": { "description": "List of events" } }
+      },
+      "post": {
+        "tags": ["CookAlong"],
+        "summary": "Create new cook-along (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Cook-along created" } }
+      }
+    },
+    "/cookalong/join/{id}": {
+      "post": {
+        "tags": ["CookAlong"],
+        "summary": "Join a cook-along event",
+        "parameters": [
+          { "name": "id", "in": "path", "schema": { "type": "string" }, "required": true }
+        ],
+        "responses": { "200": { "description": "Joined successfully" } }
+      }
+    },
+    "/cookalong/live-chat/{id}": {
+      "get": {
+        "tags": ["CookAlong"],
+        "summary": "Connect to cook-along live WebSocket",
+        "parameters": [
+          { "name": "id", "in": "path", "schema": { "type": "string" }, "required": true }
+        ],
+        "responses": { "101": { "description": "WebSocket connection established" } }
+      }
+    }
+  }
+}

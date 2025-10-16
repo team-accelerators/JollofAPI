@@ -1,0 +1,22 @@
+{
+  "paths": {
+    "/chat/message": {
+      "post": {
+        "tags": ["Chat"],
+        "summary": "Send message to AI assistant",
+        "responses": { "200": { "description": "AI response returned" } }
+      }
+    },
+    "/chat/history/{userId}/{recipeId}": {
+      "get": {
+        "tags": ["Chat"],
+        "summary": "Get chat history for user and recipe",
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "recipeId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Chat history" } }
+      }
+    }
+  }
+}

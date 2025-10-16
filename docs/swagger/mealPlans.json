@@ -1,0 +1,20 @@
+{
+  "paths": {
+    "/mealplans/generate": {
+      "post": {
+        "tags": ["MealPlans"],
+        "summary": "Generate AI meal plan based on preferences",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Meal plan generated" } }
+      }
+    },
+    "/mealplans/history": {
+      "get": {
+        "tags": ["MealPlans"],
+        "summary": "Get user meal plan history",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Meal plan history" } }
+      }
+    }
+  }
+}
