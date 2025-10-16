@@ -3,19 +3,114 @@
     "/chat/message": {
       "post": {
         "tags": ["Chat"],
-        "summary": "Send message to AI assistant",
-        "responses": { "200": { "description": "AI response returned" } }
+        "summary": "Send message to AI cooking assistant",
+        "description": "Sends a user message to the AI assistant. The assistant may respond based on recipe progress or via OpenAI.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["userId", "recipeId", "message"],
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "example": "6710c924f2ab4c1bcd9d1234",
+                    "description": "ID of the user sending the message"
+                  },
+                  "recipeId": {
+                    "type": "string",
+                    "example": "6722ab49f1d0a5b8cceef567",
+                    "description": "Recipe associated with the conversation"
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "What's the next step in this recipe?",
+                    "description": "The message content from the user"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AI response successfully returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reply": {
+                      "type": "string",
+                      "example": "Now, chop the onions and sauté them in olive oil."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing message or invalid input"
+          },
+          "500": {
+            "description": "Internal server error during chat processing"
+          }
+        }
       }
     },
     "/chat/history/{userId}/{recipeId}": {
       "get": {
         "tags": ["Chat"],
         "summary": "Get chat history for user and recipe",
+        "description": "Retrieves all chat messages between the user and assistant for a given recipe, ordered chronologically.",
         "parameters": [
-          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "recipeId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "6710c924f2ab4c1bcd9d1234",
+            "description": "ID of the user"
+          },
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "6722ab49f1d0a5b8cceef567",
+            "description": "ID of the recipe"
+          }
         ],
-        "responses": { "200": { "description": "Chat history" } }
+        "responses": {
+          "200": {
+            "description": "Chat history fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string", "example": "6710d29e5c2a42b8dca61234" },
+                      "userId": { "type": "string", "example": "6710c924f2ab4c1bcd9d1234" },
+                      "recipeId": { "type": "string", "example": "6722ab49f1d0a5b8cceef567" },
+                      "from": { "type": "string", "enum": ["user", "assistant"], "example": "assistant" },
+                      "content": { "type": "string", "example": "Sure! Preheat your oven to 180°C." },
+                      "createdAt": { "type": "string", "format": "date-time", "example": "2025-10-16T12:45:00Z" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Chat history not found"
+          },
+          "500": {
+            "description": "Server error while fetching chat history"
+          }
+        }
       }
     }
   }
