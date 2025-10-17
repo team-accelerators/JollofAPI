@@ -3,30 +3,160 @@
     "/vendors/sync": {
       "post": {
         "tags": ["Vendors"],
-        "summary": "Sync vendor data (Admin only)",
+        "summary": "Sync vendor data from Google API (Admin only)",
+        "description": "Fetches and stores nearby vendors from Google Maps based on provided latitude and longitude.",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Vendors synced" } }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lat": { "type": "number", "example": 6.5244 },
+                  "lng": { "type": "number", "example": 3.3792 }
+                },
+                "required": ["lat", "lng"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vendors synced successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Vendors synced successfully" },
+                    "insertedCount": { "type": "integer", "example": 25 },
+                    "updatedCount": { "type": "integer", "example": 10 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid latitude/longitude"
+          },
+          "500": {
+            "description": "Error syncing vendors"
+          }
+        }
       }
     },
+
     "/vendors/nearby": {
       "get": {
         "tags": ["Vendors"],
         "summary": "Find nearby vendors by location",
+        "description": "Retrieve vendors within a radius (default: 5km) of provided coordinates.",
         "parameters": [
-          { "name": "lat", "in": "query", "schema": { "type": "number" }, "required": true },
-          { "name": "lng", "in": "query", "schema": { "type": "number" }, "required": true }
+          {
+            "name": "lat",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "number", "example": 6.5244 },
+            "description": "Latitude of current location"
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "number", "example": 3.3792 },
+            "description": "Longitude of current location"
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "example": 5000 },
+            "description": "Search radius in meters (default 5000)"
+          }
         ],
-        "responses": { "200": { "description": "Nearby vendors" } }
+        "responses": {
+          "200": {
+            "description": "List of nearby vendors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string" },
+                      "name": { "type": "string", "example": "Mama Ebo Food Joint" },
+                      "address": { "type": "string", "example": "Lekki Phase 1, Lagos" },
+                      "rating": { "type": "number", "example": 4.5 },
+                      "location": {
+                        "type": "object",
+                        "properties": {
+                          "type": { "type": "string", "example": "Point" },
+                          "coordinates": {
+                            "type": "array",
+                            "items": { "type": "number" },
+                            "example": [3.3792, 6.5244]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Latitude and longitude required" },
+          "500": { "description": "Error fetching nearby vendors" }
+        }
       }
     },
+
     "/vendors/{id}": {
       "get": {
         "tags": ["Vendors"],
         "summary": "Get vendor by ID",
+        "description": "Retrieve detailed information about a specific vendor.",
         "parameters": [
-          { "name": "id", "in": "path", "schema": { "type": "string" }, "required": true }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Vendor ID"
+          }
         ],
-        "responses": { "200": { "description": "Vendor details" } }
+        "responses": {
+          "200": {
+            "description": "Vendor details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": { "type": "string" },
+                    "name": { "type": "string", "example": "Tasty Bites" },
+                    "address": { "type": "string", "example": "Yaba, Lagos" },
+                    "rating": { "type": "number", "example": 4.2 },
+                    "location": {
+                      "type": "object",
+                      "properties": {
+                        "type": { "type": "string", "example": "Point" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": { "type": "number" },
+                          "example": [3.3792, 6.5244]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Vendor not found" },
+          "500": { "description": "Error fetching vendor" }
+        }
       }
     }
   }

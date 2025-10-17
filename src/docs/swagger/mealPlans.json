@@ -1,19 +1,154 @@
 {
   "paths": {
-    "/mealplans/generate": {
-      "post": {
+    "/mealplans/generate/{userId}": {
+      "get": {
         "tags": ["MealPlans"],
-        "summary": "Generate AI meal plan based on preferences",
+        "summary": "Generate AI-based personalized meal plan",
+        "description": "Generates a personalized weekly meal plan for a user based on their stored preferences, fitness goals, and cooking habits.",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Meal plan generated" } }
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ID of the user to generate a meal plan for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully generated meal plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "user": { "type": "string", "example": "John Doe" },
+                    "preferences": {
+                      "type": "object",
+                      "description": "User preference settings used to generate the plan",
+                      "properties": {
+                        "dietaryMode": { "type": "string", "example": "Vegan" },
+                        "culturalBackground": { "type": "string", "example": "Nigerian" },
+                        "fitnessGoals": {
+                          "type": "object",
+                          "properties": {
+                            "goalType": { "type": "string", "example": "weight loss" },
+                            "dailyCalories": { "type": "number", "example": 1800 }
+                          }
+                        },
+                        "allergens": {
+                          "type": "array",
+                          "items": { "type": "string" },
+                          "example": ["peanuts", "shellfish"]
+                        },
+                        "dietaryPreferences": {
+                          "type": "array",
+                          "items": { "type": "string" },
+                          "example": ["low-carb", "high-protein"]
+                        }
+                      }
+                    },
+                    "mealPlan": {
+                      "type": "object",
+                      "properties": {
+                        "weekSummary": {
+                          "type": "string",
+                          "example": "Balanced meals tailored to your weight loss goal."
+                        },
+                        "dailyMeals": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "day": { "type": "string", "example": "Monday" },
+                              "meals": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "type": { "type": "string", "example": "Breakfast" },
+                                    "name": { "type": "string", "example": "Avocado toast with eggs" },
+                                    "calories": { "type": "number", "example": 350 }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User or preferences not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "User preferences not found" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "AI meal plan generation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Failed to generate AI meal plan" }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
+
     "/mealplans/history": {
       "get": {
         "tags": ["MealPlans"],
-        "summary": "Get user meal plan history",
+        "summary": "Get saved AI meal plan history",
+        "description": "Retrieves a list of previously generated meal plans for the logged-in user.",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Meal plan history" } }
+        "responses": {
+          "200": {
+            "description": "Meal plan history retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": { "type": "string" },
+                          "user": { "type": "string", "example": "John Doe" },
+                          "generatedAt": { "type": "string", "format": "date-time" },
+                          "weekSummary": { "type": "string", "example": "Focus on plant-based proteins this week." }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized - missing or invalid token" },
+          "500": { "description": "Failed to fetch meal plan history" }
+        }
       }
     }
   }

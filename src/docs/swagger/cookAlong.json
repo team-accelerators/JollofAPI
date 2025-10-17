@@ -1,36 +1,182 @@
 {
   "paths": {
-    "/cookalong": {
+    "/cookalongs": {
       "get": {
         "tags": ["CookAlong"],
-        "summary": "Get all cook-along events",
-        "responses": { "200": { "description": "List of events" } }
+        "summary": "Get all upcoming cook-along sessions",
+        "description": "Returns a list of upcoming cook-along sessions with recipe and host details.",
+        "responses": {
+          "200": {
+            "description": "List of cook-along sessions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": { "type": "string" },
+                          "title": { "type": "string" },
+                          "scheduledAt": { "type": "string", "format": "date-time" },
+                          "recipeId": {
+                            "type": "object",
+                            "properties": {
+                              "_id": { "type": "string" },
+                              "title": { "type": "string" },
+                              "imageUrl": { "type": "string" }
+                            }
+                          },
+                          "hostUser": {
+                            "type": "object",
+                            "properties": {
+                              "_id": { "type": "string" },
+                              "name": { "type": "string" },
+                              "email": { "type": "string" }
+                            }
+                          },
+                          "isLive": { "type": "boolean" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "post": {
         "tags": ["CookAlong"],
-        "summary": "Create new cook-along (Admin only)",
+        "summary": "Create a new cook-along session",
+        "description": "Creates a new cook-along event. Requires authentication.",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "201": { "description": "Cook-along created" } }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "recipeId", "scheduledAt"],
+                "properties": {
+                  "title": { "type": "string", "example": "Live Jollof Cooking Session" },
+                  "recipeId": { "type": "string", "example": "6534ae91e38a22a1fca122b3" },
+                  "scheduledAt": { "type": "string", "format": "date-time", "example": "2025-10-20T18:00:00Z" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cook-along successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "cookAlong": {
+                      "type": "object",
+                      "properties": {
+                        "_id": { "type": "string" },
+                        "title": { "type": "string" },
+                        "recipeId": { "type": "string" },
+                        "scheduledAt": { "type": "string", "format": "date-time" },
+                        "hostUser": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Missing required fields" },
+          "404": { "description": "Recipe not found" },
+          "500": { "description": "Failed to create cook-along" }
+        }
       }
     },
-    "/cookalong/join/{id}": {
+
+    "/cookalongs/{id}/join": {
       "post": {
         "tags": ["CookAlong"],
-        "summary": "Join a cook-along event",
+        "summary": "Join a cook-along session",
+        "description": "Allows a logged-in user to join a cook-along event.",
+        "security": [{ "BearerAuth": [] }],
         "parameters": [
-          { "name": "id", "in": "path", "schema": { "type": "string" }, "required": true }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Cook-along ID"
+          }
         ],
-        "responses": { "200": { "description": "Joined successfully" } }
+        "responses": {
+          "200": {
+            "description": "Successfully joined cook-along",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Joined cook-along successfully" },
+                    "cookAlong": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Already joined this cook-along" },
+          "404": { "description": "Cook-along not found" },
+          "500": { "description": "Failed to join cook-along" }
+        }
       }
     },
-    "/cookalong/live-chat/{id}": {
-      "get": {
+
+    "/cookalongs/{id}/live": {
+      "patch": {
         "tags": ["CookAlong"],
-        "summary": "Connect to cook-along live WebSocket",
+        "summary": "Start or stop a live cook-along session",
+        "description": "Toggle live status for a cook-along (host or admin only).",
+        "security": [{ "BearerAuth": [] }],
         "parameters": [
-          { "name": "id", "in": "path", "schema": { "type": "string" }, "required": true }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Cook-along ID"
+          }
         ],
-        "responses": { "101": { "description": "WebSocket connection established" } }
+        "responses": {
+          "200": {
+            "description": "Live status toggled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": {
+                      "type": "string",
+                      "example": "Cook-along is now live!"
+                    },
+                    "cookAlong": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "403": { "description": "Not authorized" },
+          "404": { "description": "Cook-along not found" },
+          "500": { "description": "Failed to update live status" }
+        }
       }
     }
   }

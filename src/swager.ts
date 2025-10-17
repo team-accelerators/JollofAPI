@@ -3,7 +3,7 @@
 import swaggerUi from "swagger-ui-express";
 import { Express } from "express";
 
- import swaggerDocument from "./docs/swagger/";
+ import swaggerDocument from "./docs/swagger";
 
 
 export const setupSwagger = (app: Express) => {

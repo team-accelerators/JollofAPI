@@ -3,25 +3,153 @@
     "/pantry/upload": {
       "post": {
         "tags": ["Pantry"],
-        "summary": "Upload pantry image for AI detection",
+        "summary": "Upload pantry image for AI detection and save detected items",
+        "description": "Uploads a pantry image, uses AI to detect ingredients or food items, and saves them to the database.",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "201": { "description": "Items detected" } }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Pantry image to analyze using AI"
+                  }
+                },
+                "required": ["image"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pantry items detected and saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Pantry items detected and saved successfully."
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 5
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": { "type": "string" },
+                          "name": { "type": "string", "example": "Tomato" },
+                          "category": { "type": "string", "example": "Vegetable" },
+                          "expiryDate": { "type": "string", "format": "date" },
+                          "imageUrl": { "type": "string", "example": "https://example.com/uploads/tomato.jpg" },
+                          "user": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No image uploaded or invalid request"
+          },
+          "500": {
+            "description": "Failed to process pantry image"
+          }
+        }
       }
     },
+
     "/pantry": {
       "get": {
         "tags": ["Pantry"],
-        "summary": "Get all user pantry items",
+        "summary": "Get all pantry items for the authenticated user",
+        "description": "Fetches all items in the user's pantry, sorted by expiry date.",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Pantry items" } }
+        "responses": {
+          "200": {
+            "description": "List of pantry items retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "count": { "type": "integer", "example": 12 },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": { "type": "string" },
+                          "name": { "type": "string", "example": "Rice" },
+                          "category": { "type": "string", "example": "Grain" },
+                          "expiryDate": { "type": "string", "format": "date" },
+                          "imageUrl": { "type": "string", "example": "https://example.com/uploads/rice.jpg" },
+                          "user": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to fetch pantry items"
+          }
+        }
       }
     },
+
     "/pantry/{id}": {
       "delete": {
         "tags": ["Pantry"],
         "summary": "Delete a pantry item by ID",
+        "description": "Deletes a specific pantry item using its unique ID.",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Item deleted" } }
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ID of the pantry item to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pantry item deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Pantry item deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pantry item not found"
+          },
+          "500": {
+            "description": "Failed to delete pantry item"
+          }
+        }
       }
     }
   }

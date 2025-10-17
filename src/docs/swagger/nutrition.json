@@ -3,16 +3,171 @@
     "/nutrition/analyze": {
       "post": {
         "tags": ["Nutrition"],
-        "summary": "Analyze nutrition for a recipe or ingredients",
-        "responses": { "200": { "description": "Nutrition breakdown returned" } }
+        "summary": "Analyze nutrition for a recipe or list of ingredients",
+        "description": "Uses OpenAI to estimate calories, macronutrient composition, and common allergens for a given list of ingredients.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["ingredients"],
+                "properties": {
+                  "ingredients": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["chicken breast", "olive oil", "garlic", "spinach"]
+                  },
+                  "servingSize": {
+                    "type": "string",
+                    "example": "1 serving"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nutrition breakdown successfully generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "nutrition": {
+                      "type": "object",
+                      "properties": {
+                        "calories": { "type": "number", "example": 450 },
+                        "macros": {
+                          "type": "object",
+                          "properties": {
+                            "carbs": { "type": "number", "example": 30 },
+                            "protein": { "type": "number", "example": 35 },
+                            "fat": { "type": "number", "example": 18 }
+                          }
+                        },
+                        "allergens": {
+                          "type": "array",
+                          "items": { "type": "string" },
+                          "example": ["dairy", "nuts"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "nutrition": {
+                        "calories": 450,
+                        "macros": { "carbs": 30, "protein": 35, "fat": 18 },
+                        "allergens": ["dairy"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid ingredients input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Ingredients required" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error - AI analysis failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Nutrition analysis failed" }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
+
     "/nutrition/recommend": {
       "get": {
         "tags": ["Nutrition"],
-        "summary": "Get dietary recommendations based on user profile",
+        "summary": "Get personalized dietary recommendations",
+        "description": "Retrieves AI-generated or stored dietary recommendations based on the user's profile and health data.",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Recommendations generated" } }
+        "responses": {
+          "200": {
+            "description": "Successfully fetched dietary recommendations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "recommendations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "category": { "type": "string", "example": "Protein-rich" },
+                          "description": { "type": "string", "example": "Include lean meats and legumes for muscle recovery." }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "success": true,
+                      "recommendations": [
+                        { "category": "Low-carb", "description": "Reduce refined carbs and opt for whole grains." },
+                        { "category": "Protein-rich", "description": "Add eggs, beans, and lean meats for daily intake." }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid Bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Unauthorized" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error while fetching recommendations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Failed to fetch recommendations" }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }

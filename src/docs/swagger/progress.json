@@ -1,0 +1,152 @@
+{
+  "paths": {
+    "/progress/start": {
+      "post": {
+        "tags": ["Progress"],
+        "summary": "Start or resume a cooking session for a recipe",
+        "description": "Creates or resumes a user's recipe progress. If progress doesn't exist, AI generates step-by-step cooking instructions using OpenAI.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "description": "User's unique ID",
+                    "example": "66f35b64cd12a91a3d1f202e"
+                  },
+                  "recipeId": {
+                    "type": "string",
+                    "description": "Recipe ID to start/resume progress",
+                    "example": "6701239c1b45e812fdbb3312"
+                  },
+                  "recipeName": {
+                    "type": "string",
+                    "description": "Name of the recipe (used to generate steps if new)",
+                    "example": "Jollof Rice"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": ["voice", "text"],
+                    "description": "Preferred interaction mode for cooking steps",
+                    "example": "voice"
+                  }
+                },
+                "required": ["userId", "recipeId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cooking progress started or resumed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "progress": {
+                      "type": "object",
+                      "properties": {
+                        "_id": { "type": "string" },
+                        "userId": { "type": "string" },
+                        "recipeId": { "type": "string" },
+                        "steps": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "example": "Boil 2 cups of water."
+                          }
+                        },
+                        "currentStep": { "type": "integer", "example": 0 },
+                        "mode": { "type": "string", "enum": ["voice", "text"], "example": "voice" },
+                        "lastUpdated": { "type": "string", "format": "date-time" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields or invalid data"
+          },
+          "500": {
+            "description": "Failed to start or resume progress"
+          }
+        }
+      }
+    },
+
+    "/progress/toggle-mode": {
+      "post": {
+        "tags": ["Progress"],
+        "summary": "Toggle between voice or text mode during a cooking session",
+        "description": "Updates the user’s current cooking session mode between 'voice' or 'text'.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "description": "User's unique ID",
+                    "example": "66f35b64cd12a91a3d1f202e"
+                  },
+                  "recipeId": {
+                    "type": "string",
+                    "description": "Recipe ID whose mode is being toggled",
+                    "example": "6701239c1b45e812fdbb3312"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": ["voice", "text"],
+                    "description": "New mode to switch to",
+                    "example": "text"
+                  }
+                },
+                "required": ["userId", "recipeId", "mode"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mode toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "progress": {
+                      "type": "object",
+                      "properties": {
+                        "_id": { "type": "string" },
+                        "userId": { "type": "string" },
+                        "recipeId": { "type": "string" },
+                        "mode": { "type": "string", "enum": ["voice", "text"], "example": "text" },
+                        "lastUpdated": { "type": "string", "format": "date-time" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Progress not found for the provided user and recipe IDs"
+          },
+          "500": {
+            "description": "Failed to toggle mode"
+          }
+        }
+      }
+    }
+  }
+}

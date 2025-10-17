@@ -4,50 +4,315 @@
       "get": {
         "tags": ["Recipes"],
         "summary": "Get all recipes",
-        "responses": { "200": { "description": "List of recipes" } }
+        "description": "Fetch all available recipes in the database. Public access.",
+        "responses": {
+          "200": {
+            "description": "List of all recipes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string", "example": "67012a8f1d9a4e18b83f56c3" },
+                      "title": { "type": "string", "example": "Jollof Rice" },
+                      "ingredients": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "example": ["rice", "tomato", "pepper", "onion"]
+                      },
+                      "instructions": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "example": ["Boil rice", "Blend pepper mix", "Cook with spices"]
+                      },
+                      "cuisine": { "type": "string", "example": "Nigerian" },
+                      "dietaryTags": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "example": ["vegan", "gluten-free"]
+                      },
+                      "prepTime": { "type": "integer", "example": 45 },
+                      "costLevel": { "type": "string", "example": "medium" },
+                      "moodTags": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "example": ["party", "comfort"]
+                      },
+                      "imageUrl": {
+                        "type": "string",
+                        "example": "https://res.cloudinary.com/.../jollof.jpg"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "post": {
         "tags": ["Recipes"],
-        "summary": "Create new recipe (Admin only)",
+        "summary": "Create a new recipe (Admin only)",
+        "description": "Admin-only endpoint to create a new recipe with Cloudinary image upload and AI embedding.",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "201": { "description": "Recipe created" } }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string", "example": "Jollof Rice" },
+                  "ingredients": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["rice", "tomatoes", "onions"]
+                  },
+                  "instructions": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["Step 1...", "Step 2..."]
+                  },
+                  "cuisine": { "type": "string", "example": "West African" },
+                  "dietaryTags": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["vegan"]
+                  },
+                  "prepTime": { "type": "integer", "example": 30 },
+                  "costLevel": { "type": "string", "example": "low" },
+                  "moodTags": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["comfort", "family"]
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Image file uploaded via Cloudinary"
+                  }
+                },
+                "required": ["title", "ingredients", "instructions", "cuisine"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Recipe successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "recipe": {
+                      "type": "object",
+                      "properties": {
+                        "_id": { "type": "string" },
+                        "title": { "type": "string" },
+                        "ingredients": {
+                          "type": "array",
+                          "items": { "type": "string" }
+                        },
+                        "imageUrl": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden - Admin only" },
+          "500": { "description": "Failed to create recipe" }
+        }
       }
     },
+
     "/recipes/{id}": {
       "get": {
         "tags": ["Recipes"],
         "summary": "Get recipe by ID",
         "parameters": [
-          { "name": "id", "in": "path", "schema": { "type": "string" }, "required": true }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Recipe MongoDB ObjectId"
+          }
         ],
-        "responses": { "200": { "description": "Recipe details" } }
+        "responses": {
+          "200": {
+            "description": "Recipe details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": { "type": "string" },
+                    "title": { "type": "string" },
+                    "ingredients": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "instructions": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "prepTime": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Recipe not found" }
+        }
       },
       "put": {
         "tags": ["Recipes"],
         "summary": "Update recipe (Admin only)",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Recipe updated" } }
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "ingredients": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "instructions": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "cuisine": { "type": "string" },
+                  "dietaryTags": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "prepTime": { "type": "integer" },
+                  "costLevel": { "type": "string" },
+                  "moodTags": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Recipe updated successfully" },
+          "404": { "description": "Recipe not found" },
+          "403": { "description": "Forbidden - Admin only" },
+          "500": { "description": "Update failed" }
+        }
       },
       "delete": {
         "tags": ["Recipes"],
         "summary": "Delete recipe (Admin only)",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Recipe deleted" } }
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Recipe deleted successfully" },
+          "404": { "description": "Recipe not found" },
+          "403": { "description": "Forbidden - Admin only" }
+        }
       }
     },
+
     "/recipes/foryou": {
       "get": {
         "tags": ["Recipes"],
         "summary": "Get personalized recipe feed",
+        "description": "Returns AI-personalized recipes based on the authenticated user's preferences and history.",
         "security": [{ "BearerAuth": [] }],
-        "responses": { "200": { "description": "Personalized recipes" } }
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": { "type": "string" },
+            "required": false,
+            "description": "Optional user ID for personalized feed"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Personalized recipes returned" },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Failed to fetch recommendations" }
+        }
       }
     },
+
     "/recipes/match-ingredients": {
       "post": {
         "tags": ["Recipes"],
-        "summary": "Find recipes matching pantry ingredients",
-        "responses": { "200": { "description": "Matching recipes" } }
+        "summary": "Find recipes matching given ingredients using AI",
+        "description": "Uses AI embeddings to find recipes that best match the provided list of ingredients.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inputText": {
+                    "type": "string",
+                    "description": "Comma-separated list of ingredients",
+                    "example": "rice, tomatoes, pepper, onion"
+                  },
+                  "filters": {
+                    "type": "object",
+                    "description": "Optional filters for recipe search",
+                    "properties": {
+                      "dietaryTags": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "example": ["vegan"]
+                      },
+                      "costLevel": { "type": "string", "example": "low" }
+                    }
+                  }
+                },
+                "required": ["inputText"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching recipes found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "recipeId": { "type": "string" },
+                      "title": { "type": "string" },
+                      "matchScore": { "type": "number", "example": 0.93 }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid or missing input" },
+          "500": { "description": "Failed to match ingredients" }
+        }
       }
     }
   }

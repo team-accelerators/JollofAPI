@@ -4,19 +4,163 @@
       "get": {
         "tags": ["Users"],
         "summary": "Get user profile with preferences",
-        "responses": { "200": { "description": "Profile fetched successfully" } }
+        "description": "Fetch the authenticated user's profile along with their dietary preferences.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Profile fetched successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "user": {
+                    "_id": "67107d1b6dfd001fe31cd1f1",
+                    "name": "Jane Doe",
+                    "email": "jane@example.com",
+                    "avatar": "https://res.cloudinary.com/demo/image/upload/avatar.jpg",
+                    "preferences": {
+                      "dietType": "vegan",
+                      "allergies": ["nuts", "dairy"],
+                      "favoriteCuisines": ["Italian", "Indian"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized - Token missing or invalid" },
+          "404": { "description": "User not found" },
+          "500": { "description": "Server error" }
+        }
       },
       "put": {
         "tags": ["Users"],
         "summary": "Update user profile and preferences",
-        "responses": { "200": { "description": "Profile updated successfully" } }
+        "description": "Update the logged-in user's name, avatar, and preferences (diet type, allergies, cuisines).",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "Jane Doe" },
+                  "avatar": { "type": "string", "example": "https://res.cloudinary.com/demo/image/upload/avatar.jpg" },
+                  "preferences": {
+                    "type": "object",
+                    "properties": {
+                      "dietType": { "type": "string", "example": "vegan" },
+                      "allergies": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "example": ["nuts", "dairy"]
+                      },
+                      "favoriteCuisines": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "example": ["Italian", "Indian"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Profile updated successfully",
+                  "user": {
+                    "_id": "67107d1b6dfd001fe31cd1f1",
+                    "name": "Jane Doe",
+                    "avatar": "https://res.cloudinary.com/demo/image/upload/avatar.jpg",
+                    "preferences": {
+                      "dietType": "vegan",
+                      "allergies": ["nuts", "dairy"],
+                      "favoriteCuisines": ["Italian", "Indian"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid request data" },
+          "404": { "description": "User not found" },
+          "500": { "description": "Failed to update profile" }
+        }
       }
     },
-    "/users": {
+
+    "/users/me": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get current authorized user",
+        "description": "Returns details of the currently authenticated user. Admins or logged-in users only.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Current user retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Welcome Jane Doe",
+                  "user": {
+                    "_id": "67107d1b6dfd001fe31cd1f1",
+                    "name": "Jane Doe",
+                    "email": "jane@example.com",
+                    "role": "user"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized - No user found" }
+        }
+      }
+    },
+
+    "/users/all": {
       "get": {
         "tags": ["Users"],
         "summary": "Admin: Get all users",
-        "responses": { "200": { "description": "List of all users" } }
+        "description": "Returns all users and their preferences. Admin access required.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of all users",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "count": 2,
+                  "users": [
+                    {
+                      "_id": "67107d1b6dfd001fe31cd1f1",
+                      "name": "Jane Doe",
+                      "email": "jane@example.com",
+                      "preferences": { "dietType": "vegan" }
+                    },
+                    {
+                      "_id": "67107d1b6dfd001fe31cd1f2",
+                      "name": "John Smith",
+                      "email": "john@example.com",
+                      "preferences": { "dietType": "keto" }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": { "description": "Forbidden - Admin access required" },
+          "500": { "description": "Failed to fetch users" }
+        }
       }
     }
   }
