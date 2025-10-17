@@ -7,11 +7,11 @@ import {connectDB} from '../config/connectDB'
 import cron from 'node-cron';
 import axios from 'axios';
 
-import crypto from 'crypto';
+// import crypto from 'crypto';
 
-// Random bytes → hex string
-const randomHex = crypto.randomBytes(16).toString("hex");
-console.log("Random Hex:", randomHex);
+// // Random bytes → hex string
+// const randomHex = crypto.randomBytes(16).toString("hex");
+// console.log("Random Hex:", randomHex);
 
 const PORT = process.env.PORT || 5000;
 dotenv.config()
