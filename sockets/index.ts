@@ -2,12 +2,14 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import { socketAdapter, pubClient } from "../config/redis";
 import { registerSocketHandlers } from "./socketController";
-
+import  { corsOptions } from '../src/server';
 export async function initSocket(server: any) {
   const io = new Server(server, {
-    cors: { origin: "*" },
+    cors:corsOptions,
+    transports: ["websocket", 'polling']
   });
 
+ 
   // Apply Redis adapter (for scaling)
   io.adapter(socketAdapter);
 

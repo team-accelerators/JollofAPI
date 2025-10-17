@@ -25,7 +25,22 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
+
+
+ // Cors configuration for server  Local host & web hosting services
+export const corsOptions = {
+   origin: process.env!.FRONTEND_URL,
+ credentials: true, 
+ optionSuccessStatus: 200,
+ methods: ['GET', 'PUT', 'POST', 'DELETE']
+}
+
+
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 
 app.get("/api/me", protect, (req, res) => {
   res.json({ user: req.user });
