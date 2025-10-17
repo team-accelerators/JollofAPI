@@ -1,36 +1,183 @@
 {
-  "paths": {
+ "paths": {
     "/community/posts": {
       "get": {
         "tags": ["Community"],
-        "summary": "Get all shared recipes or hacks",
-        "responses": { "200": { "description": "List of community posts" } }
+        "summary": "Get all shared community posts",
+        "description": "Fetch all community posts with user details and likes count.",
+        "responses": {
+          "200": {
+            "description": "List of community posts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommunityPost"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error while fetching posts"
+          }
+        }
       },
       "post": {
         "tags": ["Community"],
         "summary": "Create a new community post",
-        "security": [{ "BearerAuth": [] }],
-        "responses": { "201": { "description": "Post created" } }
+        "description": "Create a new post. Requires authentication.",
+        "security": [
+          { "BearerAuth": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string", "example": "My Secret Jollof Recipe" },
+                  "content": { "type": "string", "example": "Try roasting the peppers first..." },
+                  "image": { "type": "string", "example": "https://example.com/image.jpg" }
+                },
+                "required": ["title", "content"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Post successfully created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommunityPost" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Failed to create post" }
+        }
       }
     },
     "/community/posts/{id}/like": {
       "post": {
         "tags": ["Community"],
-        "summary": "Like a community post",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        "summary": "Like or Unlike a community post",
+        "description": "Toggle like status for a given post. Requires authentication.",
+        "security": [
+          { "BearerAuth": [] }
         ],
-        "responses": { "200": { "description": "Post liked" } }
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of the post to like or unlike",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Like status toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Liked" },
+                    "likes": { "type": "integer", "example": 12 }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Post not found" },
+          "500": { "description": "Server error while toggling like" }
+        }
       }
     },
     "/community/posts/{id}/comment": {
       "post": {
         "tags": ["Community"],
         "summary": "Add a comment to a community post",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        "description": "Add a comment to a post by ID. Requires authentication.",
+        "security": [
+          { "BearerAuth": [] }
         ],
-        "responses": { "201": { "description": "Comment added" } }
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of the post to comment on",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "example": "This is a great recipe! Thanks for sharing!"
+                  }
+                },
+                "required": ["text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comment successfully added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": { "type": "string" },
+                    "userId": { "type": "string" },
+                    "text": { "type": "string" },
+                    "createdAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Post not found" },
+          "500": { "description": "Server error while adding comment" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CommunityPost": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "userId": { "type": "string" },
+          "title": { "type": "string" },
+          "content": { "type": "string" },
+          "image": { "type": "string" },
+          "likes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   }

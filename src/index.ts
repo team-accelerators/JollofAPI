@@ -6,7 +6,7 @@ import {connectDB} from '../config/connectDB'
 import path from 'path';
 import cron from 'node-cron';
 import axios from 'axios';
-import express from "express";
+
 
 const PORT = process.env.PORT || 5000;
 dotenv.config()
