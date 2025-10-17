@@ -2,37 +2,86 @@
   "openapi": "3.0.3",
   "info": {
     "title": "JollofAI Backend API",
-    "version": "1.0.0",
-    "description": "Comprehensive API documentation for JollofAI — the AI-powered smart cooking assistant with recipes, nutrition, cook-alongs, and lifestyle integrations."
+    "version": "1.0.1",
+    "description": "Smart cooking assistant integrating AI-based recipe recommendations, vendor discovery, nutrition analysis, gamification, and voice-guided cooking."
   },
   "servers": [
-    { "url": "http://localhost:5000/api", "description": "Local Development Server" },
-    { "url": "https://jollofai.onrender.com/api", "description": "Production Server" }
+    { "url": "http://localhost:5000/api", "description": "Local development" },
+    { "url": "https://jollofai.onrender.com/api", "description": "Production" }
   ],
-  "components": {
-    "securitySchemes": {
-      "BearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
-    }
-  },
-  "security": [{ "BearerAuth": [] }],
   "tags": [
-    { "name": "Auth", "description": "Authentication and account management" },
-    { "name": "Users", "description": "User profiles, preferences, and admin management" },
-    { "name": "Recipes", "description": "Recipe CRUD, discovery, and AI recommendations" },
-    { "name": "Vendors", "description": "Vendor listings, ratings, and discovery" },
-    { "name": "Community", "description": "User shared recipes, likes, and comments" },
-    { "name": "Cook-Alongs", "description": "Live cook-along sessions and timers" },
-    { "name": "Meal Plans", "description": "AI meal planning and dietary tracking" },
-    { "name": "Nutrition", "description": "Nutrition data, insights, and dietary filters" },
-    { "name": "Progress", "description": "User meal tracking and history" },
-    { "name": "Chat", "description": "Chat and voice-based cooking assistant" },
-    { "name": "Pantry", "description": "Pantry management and AI item recognition" }
+    {
+      "name": "Auth",
+      "x-summary": "User authentication and authorization",
+      "description": "Endpoints for user registration, login, password management, and OAuth flows."
+    },
+    {
+      "name": "Users",
+      "x-summary": "User profiles and preferences",
+      "description": "Endpoints for retrieving and updating user profile and admin user management."
+    },
+    {
+      "name": "Recipes",
+      "x-summary": "AI-powered recipe discovery and management",
+      "description": "Endpoints for creating, updating, searching, and personalizing recipes."
+    },
+    {
+      "name": "Chat",
+      "x-summary": "AI chat assistant",
+      "description": "Chat endpoints for step-by-step recipe assistance and conversational flows."
+    },
+    {
+      "name": "Community",
+      "x-summary": "User-shared recipes and posts",
+      "description": "Community posts, likes, and comments endpoints."
+    },
+    {
+      "name": "Ratings",
+      "x-summary": "Ratings and reviews",
+      "description": "Rate recipes or vendors and fetch aggregate scores."
+    },
+    {
+      "name": "Progress",
+      "x-summary": "Cooking progress & session mode",
+      "description": "Track user's recipe progress and toggle voice/text modes."
+    },
+    {
+      "name": "MealPlans",
+      "x-summary": "Personalized meal plans",
+      "description": "Generate and retrieve AI-based meal plans."
+    },
+    {
+      "name": "Nutrition",
+      "x-summary": "Nutrition analysis and recommendations",
+      "description": "Analyze ingredients for calories, macros, and suggestions."
+    },
+    {
+      "name": "Pantry",
+      "x-summary": "Pantry management and suggestions",
+      "description": "Upload pantry images, track items, and suggest recipes."
+    },
+    {
+      "name": "Vendors",
+      "x-summary": "Local vendor discovery & sync",
+      "description": "Find and manage vendor listings, sync from Google Maps."
+    },
+    {
+      "name": "CookAlong",
+      "x-summary": "Live cook-along sessions",
+      "description": "Host, join, and toggle live cooking sessions (voice or chat)."
+    },
+    {
+      "name": "Gamification",
+      "x-summary": "Streaks, badges, and challenges",
+      "description": "User gamification endpoints for streaks, badges, and challenges."
+    }
   ],
   "paths": {
     "/auth/register": {
       "post": {
         "tags": ["Auth"],
-        "summary": "Register new user",
+        "summary": "Register a new user",
+        "description": "Creates a new user account and initializes user preferences.",
         "requestBody": {
           "required": true,
           "content": {
@@ -40,72 +89,264 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": { "type": "string" },
-                  "email": { "type": "string" },
-                  "password": { "type": "string" }
-                }
+                  "name": { "type": "string", "example": "Jane Doe" },
+                  "email": { "type": "string", "example": "jane@example.com" },
+                  "password": { "type": "string", "example": "password123" }
+                },
+                "required": ["name", "email", "password"]
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "User registered successfully" },
-          "400": { "description": "Invalid input" }
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "token": "jwt.token.here",
+                  "user": {
+                    "_id": "652b47aa12f1c9f0b9a3c9d2",
+                    "name": "Jane Doe",
+                    "email": "jane@example.com"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
         }
       }
     },
     "/auth/login": {
       "post": {
         "tags": ["Auth"],
-        "summary": "Login user and return JWT token",
+        "summary": "User login",
+        "description": "Authenticates a user using email and password.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "jane@example.com" },
+                  "password": { "type": "string", "example": "password123" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
         "responses": {
-          "200": { "description": "Login successful" },
-          "401": { "description": "Invalid credentials" }
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Login successful",
+                  "user": {
+                    "_id": "652b47aa12f1c9f0b9a3c9d2",
+                    "name": "Jane Doe",
+                    "email": "jane@example.com",
+                    "role": "user"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/401Unauthorized" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
         }
       }
     },
-    "/auth/google": {
-      "post": {
+    "/auth/google/callback": {
+      "get": {
         "tags": ["Auth"],
-        "summary": "Authenticate user via Google OAuth",
-        "responses": { "200": { "description": "Google login success" } }
+        "summary": "Google OAuth callback",
+        "description": "Callback endpoint for Google login using Passport.js",
+        "responses": {
+          "200": {
+            "description": "Google login successful",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Google login successful",
+                  "user": {
+                    "id": "652b47aa12f1c9f0b9a3c9d2",
+                    "name": "Jane Doe",
+                    "email": "jane@gmail.com",
+                    "avatar": "https://lh3.googleusercontent.com/profile.jpg",
+                    "role": "user"
+                  }
+                }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
-    "/auth/forgot-password": {
+    "/auth/reset-password": {
       "post": {
         "tags": ["Auth"],
         "summary": "Send password reset email",
-        "responses": { "200": { "description": "Reset email sent" } }
+        "description": "Sends a password reset link to the user’s email.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "email": { "type": "string", "example": "jane@example.com" } }, "required": ["email"] }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Password reset link sent" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
     "/auth/reset-password/{token}": {
       "put": {
         "tags": ["Auth"],
         "summary": "Reset password using token",
+        "description": "Resets the user’s password using a valid token from the reset email.",
         "parameters": [
-          { "name": "token", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The reset token received via email"
+          }
         ],
-        "responses": { "200": { "description": "Password reset successful" } }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "password": { "type": "string", "example": "newSecurePassword123" } }, "required": ["password"] }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Password successfully reset" },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout user",
+        "description": "Clears the JWT cookie to log the user out.",
+        "responses": {
+          "200": {
+            "description": "Logged out successfully",
+            "content": {
+              "application/json": { "example": { "message": "Logged out successfully" } }
+            }
+          }
+        }
       }
     },
 
     "/users/profile": {
       "get": {
         "tags": ["Users"],
-        "summary": "Get current user profile with preferences",
-        "responses": { "200": { "description": "Profile fetched successfully" } }
+        "summary": "Get user profile with preferences",
+        "security": [{ "BearerAuth": [] }],
+        "description": "Fetch the authenticated user's profile along with their dietary preferences.",
+        "responses": {
+          "200": {
+            "description": "Profile fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SuccessResponse" },
+                "example": {
+                  "success": true,
+                  "user": {
+                    "_id": "67107d1b6dfd001fe31cd1f1",
+                    "name": "Jane Doe",
+                    "email": "jane@example.com",
+                    "avatar": "https://res.cloudinary.com/demo/image/upload/avatar.jpg",
+                    "preferences": { "dietType": "vegan", "allergies": ["nuts", "dairy"], "favoriteCuisines": ["Italian", "Indian"] }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/401Unauthorized" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       },
       "put": {
         "tags": ["Users"],
         "summary": "Update user profile and preferences",
-        "responses": { "200": { "description": "Profile updated successfully" } }
+        "security": [{ "BearerAuth": [] }],
+        "description": "Update the logged-in user's name, avatar, and preferences (diet type, allergies, cuisines).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "name": { "type": "string" }, "avatar": { "type": "string" }, "preferences": { "type": "object" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "message": "Profile updated successfully", "user": { "_id": "67107d1b6dfd001fe31cd1f1", "name": "Jane Doe" } }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
-    "/users": {
+    "/users/me": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get current authorized user",
+        "security": [{ "BearerAuth": [] }],
+        "description": "Returns details of the currently authenticated user.",
+        "responses": {
+          "200": {
+            "description": "Current user retrieved successfully",
+            "content": { "application/json": { "example": { "success": true, "message": "Welcome Jane Doe", "user": { "_id": "67107d1b6dfd001fe31cd1f1", "name": "Jane Doe", "email": "jane@example.com", "role": "user" } } } }
+          },
+          "401": { "$ref": "#/components/responses/401Unauthorized" }
+        }
+      }
+    },
+    "/users/all": {
       "get": {
         "tags": ["Users"],
         "summary": "Admin: Get all users",
-        "responses": { "200": { "description": "List of all users" } }
+        "security": [{ "BearerAuth": [] }],
+        "description": "Returns all users and their preferences. Admin access required.",
+        "responses": {
+          "200": {
+            "description": "List of all users",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "count": 2, "users": [ { "_id": "67107d1b6dfd001fe31cd1f1", "name": "Jane Doe", "email": "jane@example.com", "preferences": { "dietType": "vegan" } }, { "_id": "67107d1b6dfd001fe31cd1f2", "name": "John Smith", "email": "john@example.com", "preferences": { "dietType": "keto" } } ] }
+              }
+            }
+          },
+          "403": { "description": "Forbidden - Admin access required" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
 
@@ -113,125 +354,773 @@
       "get": {
         "tags": ["Recipes"],
         "summary": "Get all recipes",
-        "responses": { "200": { "description": "Recipes retrieved" } }
+        "description": "Fetch all available recipes in the database. Public access.",
+        "responses": {
+          "200": {
+            "description": "List of all recipes",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Recipe" } }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       },
       "post": {
         "tags": ["Recipes"],
-        "summary": "Create a new recipe (admin only)",
-        "responses": { "201": { "description": "Recipe created" } }
+        "summary": "Create a new recipe (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "description": "Admin-only endpoint to create a new recipe with Cloudinary image upload and AI embedding.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "ingredients": { "type": "array", "items": { "type": "string" } },
+                  "instructions": { "type": "array", "items": { "type": "string" } },
+                  "cuisine": { "type": "string" },
+                  "dietaryTags": { "type": "array", "items": { "type": "string" } },
+                  "prepTime": { "type": "integer" },
+                  "costLevel": { "type": "string" },
+                  "moodTags": { "type": "array", "items": { "type": "string" } },
+                  "image": { "type": "string", "format": "binary" }
+                },
+                "required": ["title", "ingredients", "instructions", "cuisine"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Recipe successfully created",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "recipe": { "$ref": "#/components/schemas/Recipe" } } } } }
+          },
+          "401": { "$ref": "#/components/responses/401Unauthorized" },
+          "403": { "description": "Forbidden - Admin only" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
-    "/recipes/for-you": {
+    "/recipes/{id}": {
       "get": {
         "tags": ["Recipes"],
-        "summary": "Get AI-personalized recipes for user",
-        "parameters": [{ "name": "userId", "in": "query", "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Recommended recipes fetched" } }
-      }
-    },
-
-    "/vendors": {
-      "get": {
-        "tags": ["Vendors"],
-        "summary": "List all vendors",
-        "responses": { "200": { "description": "Vendors fetched" } }
+        "summary": "Get recipe by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Recipe MongoDB ObjectId" }
+        ],
+        "responses": {
+          "200": { "description": "Recipe details", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Recipe" } } } },
+          "404": { "$ref": "#/components/responses/404NotFound" }
+        }
       },
+      "put": {
+        "tags": ["Recipes"],
+        "summary": "Update recipe (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object" } } }
+        },
+        "responses": {
+          "200": { "description": "Recipe updated successfully" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "403": { "description": "Forbidden - Admin only" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["Recipes"],
+        "summary": "Delete recipe (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Recipe deleted successfully" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "403": { "description": "Forbidden - Admin only" }
+        }
+      }
+    },
+    "/recipes/foryou": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Get personalized recipe feed",
+        "security": [{ "BearerAuth": [] }],
+        "description": "Returns AI-personalized recipes based on the authenticated user's preferences and history.",
+        "parameters": [
+          { "name": "userId", "in": "query", "schema": { "type": "string" }, "required": false, "description": "Optional user ID for personalized feed" }
+        ],
+        "responses": {
+          "200": { "description": "Personalized recipes returned" },
+          "401": { "$ref": "#/components/responses/401Unauthorized" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/recipes/match-ingredients": {
       "post": {
-        "tags": ["Vendors"],
-        "summary": "Add a new vendor (Admin only)",
-        "responses": { "201": { "description": "Vendor created" } }
+        "tags": ["Recipes"],
+        "summary": "Find recipes matching given ingredients using AI",
+        "description": "Uses AI embeddings to find recipes that best match the provided list of ingredients.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inputText": { "type": "string", "description": "Comma-separated list of ingredients" },
+                  "filters": { "type": "object" }
+                },
+                "required": ["inputText"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching recipes found",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "type": "object" } } } }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
 
-    "/community": {
+    "/chat/message": {
+      "post": {
+        "tags": ["Chat"],
+        "summary": "Send message to AI cooking assistant",
+        "description": "Sends a user message to the AI assistant. The assistant may respond based on recipe progress or via OpenAI.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["userId", "recipeId", "message"],
+                "properties": {
+                  "userId": { "type": "string" },
+                  "recipeId": { "type": "string" },
+                  "message": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "AI response successfully returned", "content": { "application/json": { "schema": { "type": "object" } } } },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/chat/history/{userId}/{recipeId}": {
+      "get": {
+        "tags": ["Chat"],
+        "summary": "Get chat history for user and recipe",
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "recipeId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Chat history fetched successfully", "content": { "application/json": { "schema": { "type": "array", "items": { "type": "object" } } } } },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+
+    "/community/posts": {
       "get": {
         "tags": ["Community"],
-        "summary": "Get all shared recipes",
-        "responses": { "200": { "description": "Community feed" } }
+        "summary": "Get all shared community posts",
+        "responses": {
+          "200": { "description": "List of community posts retrieved successfully", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/CommunityPost" } } } } },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       },
       "post": {
         "tags": ["Community"],
-        "summary": "Share a new recipe to the community",
-        "responses": { "201": { "description": "Recipe shared" } }
+        "summary": "Create a new community post",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "title": { "type": "string" }, "content": { "type": "string" }, "image": { "type": "string" } }, "required": ["title", "content"] } } }
+        },
+        "responses": {
+          "201": { "description": "Post successfully created" },
+          "401": { "$ref": "#/components/responses/401Unauthorized" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
-    "/community/{id}/like": {
+    "/community/posts/{id}/like": {
       "post": {
         "tags": ["Community"],
-        "summary": "Like or unlike a community recipe",
-        "parameters": [{ "name": "id", "in": "path", "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Like toggled" } }
+        "summary": "Like or Unlike a community post",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Like status toggled successfully" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/community/posts/{id}/comment": {
+      "post": {
+        "tags": ["Community"],
+        "summary": "Add a comment to a community post",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "text": { "type": "string" } }, "required": ["text"] } } }
+        },
+        "responses": {
+          "201": { "description": "Comment successfully added" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
 
-    "/cook-alongs": {
+    "/ratings": {
+      "post": {
+        "tags": ["Ratings"],
+        "summary": "Rate or review an item (recipe or vendor)",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["targetId", "targetType", "rating"], "properties": { "targetId": { "type": "string" }, "targetType": { "type": "string", "enum": ["recipe", "vendor"] }, "rating": { "type": "number", "minimum": 1, "maximum": 5 }, "review": { "type": "string" } } } } }
+        },
+        "responses": {
+          "201": {
+            "description": "Rating created successfully",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string" }, "rating": { "$ref": "#/components/schemas/Rating" } } } } }
+          },
+          "401": { "$ref": "#/components/responses/401Unauthorized" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/ratings/{targetType}/{targetId}": {
       "get": {
-        "tags": ["Cook-Alongs"],
-        "summary": "Get all cook-along sessions",
-        "responses": { "200": { "description": "Sessions fetched" } }
-      },
-      "post": {
-        "tags": ["Cook-Alongs"],
-        "summary": "Create a new cook-along session",
-        "responses": { "201": { "description": "Session created" } }
-      }
-    },
-    "/cook-alongs/{id}/join": {
-      "post": {
-        "tags": ["Cook-Alongs"],
-        "summary": "Join a cook-along session via WebSocket",
-        "parameters": [{ "name": "id", "in": "path", "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Joined successfully" } }
-      }
-    },
-
-    "/meal-plans/generate": {
-      "post": {
-        "tags": ["Meal Plans"],
-        "summary": "Generate AI-based meal plan for user",
-        "responses": { "200": { "description": "Meal plan generated" } }
+        "tags": ["Ratings"],
+        "summary": "Get average rating for a recipe or vendor",
+        "parameters": [
+          { "name": "targetType", "in": "path", "required": true, "schema": { "type": "string", "enum": ["recipe", "vendor"] } },
+          { "name": "targetId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Average rating data",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "average": { "type": "number" }, "count": { "type": "integer" } } } } }
+          },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
 
-    "/nutrition/insights": {
+    "/progress/start": {
+      "post": {
+        "tags": ["Progress"],
+        "summary": "Start or resume a cooking session for a recipe",
+        "security": [{ "BearerAuth": [] }],
+        "description": "Creates or resumes a user's recipe progress. If progress doesn't exist, AI generates step-by-step cooking instructions using OpenAI.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["userId", "recipeId"], "properties": { "userId": { "type": "string" }, "recipeId": { "type": "string" }, "recipeName": { "type": "string" }, "mode": { "type": "string", "enum": ["voice", "text"] } } } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Cooking progress started or resumed successfully",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "progress": { "$ref": "#/components/schemas/Progress" } } } } }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/progress/toggle-mode": {
+      "post": {
+        "tags": ["Progress"],
+        "summary": "Toggle between voice or text mode during a cooking session",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["userId", "recipeId", "mode"], "properties": { "userId": { "type": "string" }, "recipeId": { "type": "string" }, "mode": { "type": "string", "enum": ["voice", "text"] } } } } }
+        },
+        "responses": {
+          "200": { "description": "Mode toggled successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "progress": { "$ref": "#/components/schemas/Progress" } } } } } },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+
+    "/mealplans/generate/{userId}": {
+      "get": {
+        "tags": ["MealPlans"],
+        "summary": "Generate AI-based personalized meal plan",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string" }, "description": "ID of the user to generate a meal plan for" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully generated meal plan",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MealPlanResponse" } } }
+          },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/mealplans/history": {
+      "get": {
+        "tags": ["MealPlans"],
+        "summary": "Get saved AI meal plan history",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Meal plan history retrieved successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "history": { "type": "array", "items": { "$ref": "#/components/schemas/MealPlan" } } } } } } },
+          "401": { "$ref": "#/components/responses/401Unauthorized" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+
+    "/nutrition/analyze": {
+      "post": {
+        "tags": ["Nutrition"],
+        "summary": "Analyze nutrition for a recipe or list of ingredients",
+        "description": "Uses OpenAI to estimate calories, macronutrient composition, and common allergens for a given list of ingredients.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["ingredients"], "properties": { "ingredients": { "type": "array", "items": { "type": "string" } }, "servingSize": { "type": "string" } } } } }
+        },
+        "responses": {
+          "200": { "description": "Nutrition breakdown successfully generated", "content": { "application/json": { "schema": { "type": "object", "properties": { "nutrition": { "type": "object" } } } } } },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/nutrition/recommend": {
       "get": {
         "tags": ["Nutrition"],
-        "summary": "Get nutrition insights for user",
-        "responses": { "200": { "description": "Nutrition data fetched" } }
+        "summary": "Get personalized dietary recommendations",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Successfully fetched dietary recommendations" },
+          "401": { "$ref": "#/components/responses/401Unauthorized" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
 
-    "/progress": {
-      "get": {
-        "tags": ["Progress"],
-        "summary": "Get user's progress or history",
-        "responses": { "200": { "description": "Progress fetched" } }
-      }
-    },
-
-    "/chat": {
-      "get": {
-        "tags": ["Chat"],
-        "summary": "Get chat history",
-        "responses": { "200": { "description": "Chats retrieved" } }
-      },
+    "/pantry/upload": {
       "post": {
-        "tags": ["Chat"],
-        "summary": "Send message to AI or user",
-        "responses": { "200": { "description": "Message sent" } }
+        "tags": ["Pantry"],
+        "summary": "Upload pantry image for AI detection and save detected items",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": { "type": "string", "format": "binary" }
+                },
+                "required": ["image"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Pantry items detected and saved successfully" },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
       }
     },
-
     "/pantry": {
       "get": {
         "tags": ["Pantry"],
-        "summary": "Get user's pantry items",
-        "responses": { "200": { "description": "Pantry items retrieved" } }
+        "summary": "Get all pantry items for the authenticated user",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of pantry items retrieved successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "count": { "type": "integer" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/PantryItem" } } } } } } },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/pantry/{id}": {
+      "delete": {
+        "tags": ["Pantry"],
+        "summary": "Delete a pantry item by ID",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Pantry item deleted successfully" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/pantry/suggestions": {
+      "get": {
+        "tags": ["Pantry"],
+        "summary": "Suggest recipes based on pantry items",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Recipe suggestions generated" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+
+    "/vendors/sync": {
+      "post": {
+        "tags": ["Vendors"],
+        "summary": "Sync vendor data from Google API (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } }, "required": ["lat", "lng"] } } }
+        },
+        "responses": {
+          "200": { "description": "Vendors synced successfully" },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/vendors/nearby": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "Find nearby vendors by location",
+        "parameters": [
+          { "name": "lat", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "lng", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "radius", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "List of nearby vendors" },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/vendors/{id}": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "Get vendor by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Vendor details retrieved successfully", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Vendor" } } } },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+
+    "/cookalongs": {
+      "get": {
+        "tags": ["CookAlong"],
+        "summary": "Get all upcoming cook-along sessions",
+        "description": "Returns a list of upcoming cook-along sessions with recipe and host details.",
+        "responses": {
+          "200": { "description": "List of cook-along sessions", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/CookAlong" } } } } } } }
+        }
       },
       "post": {
-        "tags": ["Pantry"],
-        "summary": "Add or detect pantry item via AI",
-        "responses": { "201": { "description": "Pantry item added" } }
+        "tags": ["CookAlong"],
+        "summary": "Create a new cook-along session",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["title", "recipeId", "scheduledAt"], "properties": { "title": { "type": "string" }, "recipeId": { "type": "string" }, "scheduledAt": { "type": "string", "format": "date-time" } } } } }
+        },
+        "responses": {
+          "201": { "description": "Cook-along successfully created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "cookAlong": { "$ref": "#/components/schemas/CookAlong" } } } } } },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/cookalongs/{id}/join": {
+      "post": {
+        "tags": ["CookAlong"],
+        "summary": "Join a cook-along session",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Successfully joined cook-along" },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/cookalongs/{id}/live": {
+      "patch": {
+        "tags": ["CookAlong"],
+        "summary": "Start or stop a live cook-along session",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Live status toggled", "content": { "application/json": { "schema": { "type": "object" } } } },
+          "403": { "description": "Not authorized" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+
+    "/gamification/streak": {
+      "post": {
+        "tags": ["Gamification"],
+        "summary": "Update or maintain user's cooking streak",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Streak updated successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "streak": { "$ref": "#/components/schemas/Streak" } } } } } },
+          "401": { "$ref": "#/components/responses/401Unauthorized" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/api/gamification/challenges": {
+      "get": {
+        "tags": ["Gamification"],
+        "summary": "Get all cooking challenges",
+        "responses": {
+          "200": { "description": "List of challenges", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "challenges": { "type": "array", "items": { "$ref": "#/components/schemas/Challenge" } } } } } } },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/api/gamification/challenges/{id}/join": {
+      "post": {
+        "tags": ["Gamification"],
+        "summary": "Join a specific challenge",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Successfully joined the challenge" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    },
+    "/api/gamification/badges": {
+      "get": {
+        "tags": ["Gamification"],
+        "summary": "Get all available badges",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of badges", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "badges": { "type": "array", "items": { "$ref": "#/components/schemas/Badge" } } } } } } },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string" },
+          "avatar": { "type": "string" },
+          "role": { "type": "string", "example": "user" },
+          "preferences": { "type": "object" }
+        }
+      },
+      "Recipe": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "title": { "type": "string" },
+          "ingredients": { "type": "array", "items": { "type": "string" } },
+          "instructions": { "type": "array", "items": { "type": "string" } },
+          "cuisine": { "type": "string" },
+          "dietaryTags": { "type": "array", "items": { "type": "string" } },
+          "prepTime": { "type": "integer" },
+          "costLevel": { "type": "string" },
+          "moodTags": { "type": "array", "items": { "type": "string" } },
+          "imageUrl": { "type": "string" }
+        }
+      },
+      "Vendor": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "address": { "type": "string" },
+          "rating": { "type": "number" },
+          "location": { "type": "object" }
+        }
+      },
+      "CommunityPost": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "userId": { "type": "string" },
+          "title": { "type": "string" },
+          "content": { "type": "string" },
+          "image": { "type": "string" },
+          "likes": { "type": "array", "items": { "type": "string" } },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Rating": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "targetId": { "type": "string" },
+          "targetType": { "type": "string", "enum": ["recipe", "vendor"] },
+          "rating": { "type": "number" },
+          "review": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Progress": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "userId": { "type": "string" },
+          "recipeId": { "type": "string" },
+          "steps": { "type": "array", "items": { "type": "string" } },
+          "currentStep": { "type": "integer" },
+          "mode": { "type": "string", "enum": ["voice", "text"] },
+          "lastUpdated": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CookAlong": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "title": { "type": "string" },
+          "scheduledAt": { "type": "string", "format": "date-time" },
+          "recipeId": { "$ref": "#/components/schemas/Recipe" },
+          "hostUser": { "$ref": "#/components/schemas/User" },
+          "isLive": { "type": "boolean" }
+        }
+      },
+      "Streak": {
+        "type": "object",
+        "properties": {
+          "user": { "type": "string" },
+          "days": { "type": "integer" },
+          "lastCookedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Challenge": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "participants": { "type": "array", "items": { "type": "string" } },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Badge": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "icon": { "type": "string" }
+        }
+      },
+      "MealPlan": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "user": { "type": "string" },
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "weekSummary": { "type": "string" },
+          "dailyMeals": {
+            "type": "array",
+            "items": { "type": "object", "properties": { "day": { "type": "string" }, "meals": { "type": "array", "items": { "type": "object" } } } }
+          }
+        }
+      },
+      "MealPlanResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "user": { "type": "string" },
+          "preferences": { "type": "object" },
+          "mealPlan": { "$ref": "#/components/schemas/MealPlan" }
+        }
+      },
+      "PantryItem": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "category": { "type": "string" },
+          "expiryDate": { "type": "string", "format": "date" },
+          "imageUrl": { "type": "string" },
+          "user": { "type": "string" }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
+        }
+      }
+    },
+    "responses": {
+      "401Unauthorized": {
+        "description": "Unauthorized - missing or invalid token",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "error": "Unauthorized" } } }
+      },
+      "404NotFound": {
+        "description": "Not Found",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "error": "Not found" } } }
+      },
+      "500ServerError": {
+        "description": "Server error",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "error": "Internal server error" } } }
+      },
+      "400BadRequest": {
+        "description": "Bad Request",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "error": "Invalid request data" } } }
       }
     }
   }

@@ -3,11 +3,11 @@ import path from "path";
 import swaggerUi from "swagger-ui-express";
 import { Express } from "express";
 import fs from "fs";
-import swaggerDocument from "./docs/swagger";
+
 // Path to your swagger.json file
-// const swaggerFile = path.join(__dirname, "../docs/swagger.json");
-// const swaggerData = fs.readFileSync(swaggerFile, "utf8");
-// const swaggerDocument = JSON.parse(swaggerData);
+const swaggerFile = path.join(__dirname, "../swagger.json");
+const swaggerData = fs.readFileSync(swaggerFile, "utf8");
+const swaggerDocument = JSON.parse(swaggerData);
 
 export const setupSwagger = (app: Express) => {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
