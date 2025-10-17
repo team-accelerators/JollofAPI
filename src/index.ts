@@ -3,10 +3,9 @@ import "./jobs/vendorCron";
 import dotenv from 'dotenv';
 import app from './server';
 import {connectDB} from '../config/connectDB'
-import path from 'path';
+
 import cron from 'node-cron';
 import axios from 'axios';
-
 
 const PORT = process.env.PORT || 5000;
 dotenv.config()

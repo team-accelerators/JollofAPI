@@ -1,0 +1,168 @@
+{
+    "paths": {
+    "/api/gamification/streak": {
+      "post": {
+        "tags": ["Gamification"],
+        "summary": "Update or maintain user's cooking streak",
+        "description": "Updates the user's current cooking streak. If the user cooked today, their streak continues; if they missed days, it resets.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Streak updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "streak": {
+                      "type": "object",
+                      "properties": {
+                        "user": { "type": "string", "example": "65f9d1c74b23a2f9084e3a1d" },
+                        "days": { "type": "integer", "example": 5 },
+                        "lastCookedAt": { "type": "string", "format": "date-time" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized - missing or invalid token" },
+          "500": { "description": "Failed to update streak" }
+        }
+      }
+    },
+    "/api/gamification/challenges": {
+      "get": {
+        "tags": ["Gamification"],
+        "summary": "Get all cooking challenges",
+        "description": "Returns a list of available cooking challenges users can join.",
+        "responses": {
+          "200": {
+            "description": "List of challenges",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "challenges": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": { "type": "string", "example": "67212b4566dc91001f2d4a12" },
+                          "title": { "type": "string", "example": "Cook 5 new meals this week" },
+                          "description": { "type": "string", "example": "Try five new recipes in 7 days to earn a badge!" },
+                          "participants": {
+                            "type": "array",
+                            "items": { "type": "string" }
+                          },
+                          "createdAt": { "type": "string", "format": "date-time" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Failed to fetch challenges" }
+        }
+      }
+    },
+    "/api/gamification/challenges/{id}/join": {
+      "post": {
+        "tags": ["Gamification"],
+        "summary": "Join a specific challenge",
+        "description": "Allows a logged-in user to join a cooking challenge by its ID.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Challenge ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully joined the challenge",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Joined challenge" },
+                    "challenge": {
+                      "type": "object",
+                      "properties": {
+                        "_id": { "type": "string", "example": "67212b4566dc91001f2d4a12" },
+                        "title": { "type": "string", "example": "Vegan Week" },
+                        "participants": {
+                          "type": "array",
+                          "items": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Challenge not found" },
+          "500": { "description": "Failed to join challenge" }
+        }
+      }
+    },
+    "/api/gamification/badges": {
+      "get": {
+        "tags": ["Gamification"],
+        "summary": "Get all available badges",
+        "description": "Retrieves a list of badges a user can earn through streaks or challenges.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of badges",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "badges": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": { "type": "string", "example": "67213b5566dc91001f2d4b33" },
+                          "name": { "type": "string", "example": "Cooking Pro" },
+                          "description": { "type": "string", "example": "Awarded for completing 10 cooking challenges" },
+                          "icon": { "type": "string", "example": "🥇" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Failed to fetch badges" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+
+}

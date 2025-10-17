@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import cors from "cors";
-
+import path from "path";
 import authRoutes from "../routes/authRoutes";
 import chatRoutes from "../routes/chatRoutes";
 import pantryRoutes from "../routes/pantryRoutes";
@@ -16,6 +16,7 @@ import communityRoutes from "../routes/communityRoutes";
 import cookAlongRoutes from "../routes/cookAlongRoutes";
 import ratingRoutes from "../routes/ratingRoutes";
 import userRoutes from "../routes/userRoutes";
+import gamificationRoutes from "../routes/gamificationRoutes";
 
 import { protect } from "../middlewares/authMiddleware";
 
@@ -30,7 +31,7 @@ app.get("/api/me", protect, (req, res) => {
   res.json({ user: req.user });
 });
 
-
+app.use("/swagger", express.static(path.join(__dirname, "../docs/swagger")));
 
 // Home route
 app.get('/', (req, res) => {
@@ -54,7 +55,7 @@ app.use("/api/nutrition",  nutritionRoutes);
 app.use("/api/community",  communityRoutes);
 app.use("/api/cook-along",  cookAlongRoutes);
 app.use("/api/ratings",  ratingRoutes); 
-
+app.use("/api/gamification",  gamificationRoutes);
 
 export default app;
 

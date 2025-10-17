@@ -1,10 +1,13 @@
 
-
+import path from "path";
 import swaggerUi from "swagger-ui-express";
 import { Express } from "express";
-
- import swaggerDocument from "./docs/swagger";
-
+import fs from "fs";
+import swaggerDocument from "./docs/swagger";
+// Path to your swagger.json file
+// const swaggerFile = path.join(__dirname, "../docs/swagger.json");
+// const swaggerData = fs.readFileSync(swaggerFile, "utf8");
+// const swaggerDocument = JSON.parse(swaggerData);
 
 export const setupSwagger = (app: Express) => {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
@@ -32,3 +35,21 @@ export const setupSwagger = (app: Express) => {
 
 
 
+
+
+
+
+
+// // src/swagger.ts
+// import swaggerJSDoc from 'swagger-jsdoc';
+// import swaggerUi from 'swagger-ui-express';
+// import YAML from "yamljs";
+// import { Express } from 'express';
+
+
+
+// const swaggerSpec  = YAML.load("./config/swagger.yaml");
+  
+// export const setupSwagger = (app: Express) => {
+//   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// };

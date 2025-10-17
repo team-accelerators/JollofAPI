@@ -7,9 +7,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon",
-    "build": "tsc && node scripts/copy-swagger.js",
-      "copy-swagger": "mkdir -p dist/docs/swagger && cp -r src/docs/swagger/*.json dist/docs/swagger/",
-      "postbuild": "node scripts/copy-swagger.js",
+    "build": "tsc",
+    "postbuild": "cp swagger.json dist/",
     "start": "node dist/src/index.js"
   },
   "dependencies": {
