@@ -59,6 +59,7 @@ export const register = async (req: Request, res: Response) => {
     res.status(201).json({
       success: true,
       token,
+      message: "Signup successful!",
       user: await User.findById(user._id).populate("preferences"),
     });
   } catch (err) {
