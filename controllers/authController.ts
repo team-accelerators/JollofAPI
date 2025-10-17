@@ -54,11 +54,12 @@ export const register = async (req: Request, res: Response) => {
     user.preferences = preferences._id;
     await user.save();
 
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+    // const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+    const token = generateToken((user._id as Types.ObjectId).toString(), user.role);
+    sendCookie(res, token);
 
     res.status(201).json({
       success: true,
-      token,
       message: "Signup successful!",
       user: await User.findById(user._id).populate("preferences"),
     });

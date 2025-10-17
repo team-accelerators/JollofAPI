@@ -105,7 +105,6 @@
               "application/json": {
                 "example": {
                   "success": true,
-                  "token": "jwt.token.here",
                   "message":"Signup successful!",
                   "user": {
                     "_id": "652b47aa12f1c9f0b9a3c9d2",
