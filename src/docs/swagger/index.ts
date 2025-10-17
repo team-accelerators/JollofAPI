@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { OpenAPIV3 } from "openapi-types";
 
-const swaggerDir = path.join(__dirname);
+const swaggerDir = __dirname
 
 const swaggerBase: OpenAPIV3.Document = {
   openapi: "3.0.3",
