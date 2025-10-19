@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import path from "path";
 import authRoutes from "../routes/authRoutes";
 import chatRoutes from "../routes/chatRoutes";
@@ -27,15 +27,28 @@ app.use(express.json());
 app.use(cookieParser());
 
 
- // Cors configuration for server  Local host & web hosting services
-export const corsOptions = {
-   origin: process.env!.FRONTEND_URL,
- credentials: true, 
- optionSuccessStatus: 200,
- methods: ['GET', 'PUT', 'POST', 'DELETE']
-}
+const allowedOrigins = [
+   process.env!.FRONTEND_URL_dev, // Example frontend running locally
+  process.env!.FRONTEND_URL_prod, //  production frontend
+  process.env!.FRONTEND_URL_dev2
+].filter(Boolean) as string[]; // remove undefined and ensure type
 
+// Define CORS options
+const corsOptions: CorsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
 
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ["GET", "PUT", "POST", "DELETE"],
+};
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
