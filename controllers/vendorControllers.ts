@@ -1,19 +1,27 @@
 import { Request, Response } from "express";
 import Vendor from "../models/vendors";
-import { syncVendorsFromGoogle } from "../services/vendorService";
+import { syncVendors } from "../services/vendorService";
 
-export const syncVendors = async (req: Request, res: Response) => {
+
+export const syncVendor = async (req: Request, res: Response) => {
+  const { lat, lng } = req.query;
+  if (!lat || !lng)
+    return res.status(400).json({ error: "Missing lat/lng parameters" });
+
   try {
-    const { lat, lng } = req.body;
-    if (!lat || !lng)
-      return res.status(400).json({ message: "Latitude and longitude required" });
-
-    const result = await syncVendorsFromGoogle(lat, lng);
-    res.status(200).json({ message: "Vendors synced successfully", ...result });
-  } catch (err: any) {
-    res.status(500).json({ message: "Error syncing vendors", error: err.message });
+    const result = await syncVendors(Number(lat), Number(lng));
+    res.json({
+      success: true,
+      source: result.source,
+      count: result.count,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "All sources failed",
+      message: (error as any).message,
+    });
   }
-};
+}
 
 export const getNearbyVendors = async (req: Request, res: Response) => {
   try {

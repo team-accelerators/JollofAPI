@@ -1,0 +1,19 @@
+# ---------- DEVELOPMENT STAGE ----------
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy manifest files first for better caching
+COPY package*.json tsconfig*.json ./
+
+# Install all dependencies (including dev)
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Expose the app port
+EXPOSE 5000
+
+# Run in watch mode with nodemon
+CMD ["npm", "run", "dev"]

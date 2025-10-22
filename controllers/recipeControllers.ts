@@ -1,9 +1,24 @@
+import multer from "multer";
 import { Request, Response } from "express";
 import Recipe from "../models/recipe";
+
 import User from "../models/user";
 import { getOpenAIEmbedding } from "../utils/embedding";
 import { cosineSimilarity } from "../utils/cosine";
 import { generateRecipesFromOpenAI } from '../utils/openaiRecipes';
+
+
+import {
+  detectIngredientsWithGoogleVision,
+  analyzeImageWithOpenAI,
+} from "../utils/visionUtils";
+
+// 🧠 In-memory upload (no files written to disk)
+// 🧠 Allow multiple image uploads
+const upload = multer({ dest: "uploads/" });
+export const uploadIngredientImage = upload.array("images", 5); // up to 5 images
+
+
 /**
  * @desc Create a new recipe with AI embedding
  * @route POST /api/recipes
@@ -119,17 +134,38 @@ export const getForYouRecipes = async (req: Request, res: Response) => {
 export const matchIngredientsToRecipes = async (req: Request, res: Response) => {
   try {
     const { inputText, filters } = req.body;
+    const file = (req as any).file;
 
-    if (!inputText || typeof inputText !== 'string') {
-      return res.status(400).json({ error: 'Missing or invalid inputText' });
+    let combinedText = inputText || "";
+
+    // 🖼️ If user uploaded an image, analyze it
+    if (file) {
+      console.log("🧾 Image uploaded:", file.originalname);
+
+      // 1️⃣ Detect ingredients via Google Vision
+      const googleIngredients = await detectIngredientsWithGoogleVision(file.buffer);
+
+      // 2️⃣ Enhance with OpenAI Vision (GPT-4o)
+      const openaiDetected = await analyzeImageWithOpenAI(file.buffer);
+
+      const detectedIngredients = Array.from(
+        new Set([...googleIngredients, ...openaiDetected])
+      );
+
+      console.log("🍅 Detected ingredients:", detectedIngredients);
+
+      combinedText += " " + detectedIngredients.join(" ");
     }
 
-    const userEmbedding = await getOpenAIEmbedding(inputText);
+    if (!combinedText || typeof combinedText !== "string") {
+      return res.status(400).json({ error: "Missing or invalid input text or image" });
+    }
 
-    const query: any = {
-      embedding: { $exists: true },
-    };
+    // 🧠 Generate user embedding
+    const userEmbedding = await getOpenAIEmbedding(combinedText);
 
+    // 🧮 Apply optional filters
+    const query: any = { embedding: { $exists: true } };
     if (filters?.costLevel) query.costLevel = filters.costLevel;
     if (filters?.dietaryTags?.length) query.dietaryTags = { $all: filters.dietaryTags };
     if (filters?.maxPrepTime) query.prepTime = { $lte: filters.maxPrepTime };
@@ -138,6 +174,7 @@ export const matchIngredientsToRecipes = async (req: Request, res: Response) => 
 
     const recipes = await Recipe.find(query);
 
+    // 🧩 Compute similarity
     const scored = recipes.map((recipe) => ({
       recipe,
       similarity: cosineSimilarity(userEmbedding, recipe.embedding || []),
@@ -149,18 +186,17 @@ export const matchIngredientsToRecipes = async (req: Request, res: Response) => 
       .map((r) => r.recipe);
 
     if (topRecipes.length > 0) {
-      return res.json({ source: 'internal', recipes: topRecipes });
+      return res.json({ source: "internal", recipes: topRecipes });
     }
 
-    // 🧠 Fall back to OpenAI if no good matches found
-    const generatedRecipes = await generateRecipesFromOpenAI(inputText, filters);
-    return res.json({ source: 'openai', recipes: generatedRecipes });
+    // 🧠 Fallback — use OpenAI recipe generation
+    const generatedRecipes = await generateRecipesFromOpenAI(combinedText, filters);
+    return res.json({ source: "openai", recipes: generatedRecipes });
   } catch (err) {
-    console.error('Ingredient matching failed:', err);
-    res.status(500).json({ error: 'Failed to match ingredients' });
+    console.error("❌ Ingredient matching failed:", err);
+    res.status(500).json({ error: "Failed to match ingredients" });
   }
 };
-
 
 
 /**
@@ -221,3 +257,4 @@ export const deleteRecipe = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+

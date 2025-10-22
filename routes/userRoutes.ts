@@ -1,6 +1,6 @@
 import express from "express";
 import { protect, adminOnly } from "../middlewares/authMiddleware";
-import { getUserProfile, updateUserProfile, getAllUsers } from "../controllers/userProfileController";
+import { getUserProfile, updateUserProfile, getAllUsers, getAuthUser } from "../controllers/userProfileController";
 
 const router = express.Router();
 
@@ -89,7 +89,7 @@ router.put("/profile", protect, updateUserProfile);
  *       403:
  *         description: Forbidden — Admin access required.
  */
-router.get("/me", protect,  getAllUsers);
+router.get("/me", protect, getAuthUser);
 
 
 

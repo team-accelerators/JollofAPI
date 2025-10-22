@@ -1,33 +1,45 @@
 import express from "express";
 import { protect } from "../middlewares/authMiddleware";
-import {
-  uploadPantryImage,
-  getUserPantry,
-  deletePantryItem,
-} from "../controllers/pantryController";
 import { upload } from "../middlewares/upload"; // Cloudinary + Multer setup
+import {
+  getPantryItems,
+  addPantryItem,
+  updatePantryItem,
+  deletePantryItem,
+  suggestRecipesFromPantry
+} from "../controllers/pantryController";
 
 const router = express.Router();
 
-/**
- * @route POST /api/pantry/upload
- * @desc Upload pantry image, detect items with AI, and save them
- * @access Private
- */
-router.post("/upload", protect, upload.single("image"), uploadPantryImage);
 
 /**
  * @route GET /api/pantry
  * @desc Get all pantry items for the logged-in user
+ * @route POST /api/pantry
+ * @desc Add a new pantry item manually
  * @access Private
  */
-router.get("/pantry", protect, getUserPantry);
+router
+  .route("/")
+  .get(protect, getPantryItems)
+  .post(protect, addPantryItem);
 
 /**
+ * @route PUT /api/pantry/:id
+ * @desc Update pantry item (e.g. quantity, name, etc.)
  * @route DELETE /api/pantry/:id
  * @desc Delete a specific pantry item
  * @access Private
  */
-router.delete("/:id", protect, deletePantryItem);
+router
+  .route("/:id")
+  .put(protect, updatePantryItem)
+  .delete(protect, deletePantryItem);
 
+/**
+ * @route   GET /api/pantry/suggested
+ * @desc    Suggest recipes based on pantry contents
+ * @access  Private
+ */
+router.get("/suggestions", protect, suggestRecipesFromPantry);
 export default router;

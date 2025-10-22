@@ -7,6 +7,7 @@ import {
   deleteRecipe,
   getForYouRecipes,
   matchIngredientsToRecipes,
+  uploadIngredientImage
 } from "../controllers/recipeControllers";
 import { protect, adminOnly } from "../middlewares/authMiddleware";
 import { upload } from "../middlewares/upload";
@@ -82,6 +83,6 @@ router.get("/foryou", protect, getForYouRecipes);
  * @body {object} filters - Optional filters (dietaryTags, costLevel, etc.)
  * @returns {object[]} Top 3 AI-matched recipes
  */
-router.post("/match-ingredients", matchIngredientsToRecipes);
+router.post("/match-ingredients", protect, uploadIngredientImage,  matchIngredientsToRecipes);
 
 export default router;

@@ -58,7 +58,7 @@
     {
       "name": "Pantry",
       "x-summary": "Pantry management and suggestions",
-      "description": "Upload pantry images, track items, and suggest recipes."
+      "description": "Add items to pantry, track items, and suggest recipes."
     },
     {
       "name": "Vendors",
@@ -734,10 +734,10 @@
       }
     },
 
-    "/pantry/upload": {
+    "/pantry/items": {
       "post": {
         "tags": ["Pantry"],
-        "summary": "Upload pantry image for AI detection and save detected items",
+        "summary": "Add items to pantry",
         "security": [{ "BearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -758,10 +758,8 @@
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "500": { "$ref": "#/components/responses/500ServerError" }
         }
-      }
-    },
-    "/pantry": {
-      "get": {
+      },
+         "get": {
         "tags": ["Pantry"],
         "summary": "Get all pantry items for the authenticated user",
         "security": [{ "BearerAuth": [] }],
@@ -771,6 +769,7 @@
         }
       }
     },
+ 
     "/pantry/{id}": {
       "delete": {
         "tags": ["Pantry"],
@@ -781,6 +780,19 @@
         ],
         "responses": {
           "200": { "description": "Pantry item deleted successfully" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500ServerError" }
+        }
+      },
+      "put": {
+        "tags": ["Pantry"],
+        "summary": "Update a pantry item by ID",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Pantry item update successfully" },
           "404": { "$ref": "#/components/responses/404NotFound" },
           "500": { "$ref": "#/components/responses/500ServerError" }
         }

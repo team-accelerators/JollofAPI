@@ -1,7 +1,7 @@
 import express from "express";
 import { protect, adminOnly } from "../middlewares/authMiddleware";
 import {
-  syncVendors,
+  syncVendor,
   getNearbyVendors,
   getVendorById,
 } from "../controllers/vendorControllers";
@@ -13,7 +13,7 @@ const router = express.Router();
  * @desc Sync vendor data from external sources or manual input
  * @access Admin Only
  */
-router.post("/vendors/sync", protect, adminOnly, syncVendors);
+router.post("/vendors/sync", protect, adminOnly, syncVendor);
 
 /**
  * @route GET /api/vendors/nearby

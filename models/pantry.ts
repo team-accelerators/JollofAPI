@@ -3,10 +3,13 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IPantryItem extends Document {
   user: mongoose.Types.ObjectId;
   name: string;
-  category?: string; // e.g. dairy, vegetable, grain, etc.
+  category?: string;
   imageUrl?: string;
   quantity?: number;
-  expiryDate?: Date; // auto-estimated expiry based on category
+  unit?: string;
+  expiryDate?: Date;
+  lowStockThreshold?: number;
+  addedDate?: Date;
   embedding?: number[];
   createdAt?: Date;
   updatedAt?: Date;
@@ -14,16 +17,8 @@ export interface IPantryItem extends Document {
 
 const pantrySchema = new Schema<IPantryItem>(
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    name: { type: String, required: true, trim: true },
     category: {
       type: String,
       enum: [
@@ -40,26 +35,15 @@ const pantrySchema = new Schema<IPantryItem>(
       ],
       default: "other",
     },
-    imageUrl: {
-      type: String,
-      default: "",
-    },
-    quantity: {
-      type: Number,
-      default: 1,
-    },
-    expiryDate: {
-      type: Date,
-      default: null,
-    },
-    embedding: {
-      type: [Number],
-      default: [],
-    },
+    imageUrl: { type: String, default: "" },
+    quantity: { type: Number, default: 1 },
+    unit: { type: String, default: "pieces" },
+    expiryDate: { type: Date },
+    lowStockThreshold: { type: Number, default: 5 },
+    embedding: { type: [Number], default: [] },
+    addedDate: { type: Date, default: Date.now },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 export default mongoose.model<IPantryItem>("PantryItem", pantrySchema);
