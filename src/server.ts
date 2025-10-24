@@ -34,7 +34,7 @@ const allowedOrigins = [
 ].filter(Boolean) as string[]; // remove undefined and ensure type
 
 // Define CORS options
-const corsOptions: CorsOptions = {
+export const corsOptions: CorsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
