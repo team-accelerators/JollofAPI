@@ -5,8 +5,8 @@ import {
   getRecipeById,
   updateRecipe,
   deleteRecipe,
-  getForYouRecipes,
-  matchIngredientsToRecipes,
+  myRecipe,
+  generateRecipe,
   uploadIngredientImage
 } from "../controllers/recipeControllers";
 import { protect, adminOnly } from "../middlewares/authMiddleware";
@@ -73,7 +73,7 @@ router.delete("/:id", protect, adminOnly, deleteRecipe);
  * @query {string} userId - The ID of the user
  * @returns {object[]} Top recommended recipes
  */
-router.get("/foryou", protect, getForYouRecipes);
+router.get("/my-recipe", protect, myRecipe);
 
 /**
  * @route POST /api/recipes/match-ingredients
@@ -83,6 +83,6 @@ router.get("/foryou", protect, getForYouRecipes);
  * @body {object} filters - Optional filters (dietaryTags, costLevel, etc.)
  * @returns {object[]} Top 3 AI-matched recipes
  */
-router.post("/match-ingredients", protect, uploadIngredientImage,  matchIngredientsToRecipes);
+router.post("/generate-recipe", protect, uploadIngredientImage,  generateRecipe);
 
 export default router;

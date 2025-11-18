@@ -3,7 +3,7 @@ import PantryItem from "../models/pantry";
 
 import mongoose from "mongoose";
 
-import Recipe, { IRecipe } from "../models/recipe";
+import Recipe, { IIngredient, IRecipe } from "../models/recipe";
 import { cosineSimilarity } from "../utils/math";
 import { getPantryEmbedding } from "../utils/pantryEmbedding";
 import OpenAI from "openai";
@@ -160,7 +160,7 @@ export const suggestRecipesFromPantry = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?._id;
 
-    // 🧺 1️⃣ Get pantry items
+    // 1️⃣ Get pantry items
     const pantryItems = await PantryItem.find({ user: userId });
     if (!pantryItems.length) {
       return res.status(200).json({
@@ -171,42 +171,44 @@ export const suggestRecipesFromPantry = async (req: Request, res: Response) => {
 
     const pantryList = pantryItems.map((i) => i.name).join(", ");
 
-    // 🧩 2️⃣ Compute pantry embedding
+    // 2️⃣ Compute pantry embedding
     const pantryEmbedding = await getPantryEmbedding(
       pantryItems.map((i) => i.name)
     );
-
     if (!pantryEmbedding?.length) {
       return res.status(500).json({ error: "Failed to compute pantry embedding" });
     }
 
-    // 🍳 3️⃣ Find all recipes with embeddings
+    // 3️⃣ Load recipe embeddings
     const recipes = await Recipe.find({
       embedding: { $exists: true, $ne: [] },
-    }).lean<IRecipe[]>();
+    }).lean<IRecipe[]>(); // ✅ FIXED
 
-    // 🧮 4️⃣ Compute similarity scores
+    // 4️⃣ Score recipes
     const scoredRecipes = recipes
       .filter((r) => Array.isArray(r.embedding) && r.embedding.length > 0)
-      .map((recipe) => {
-        const similarity = cosineSimilarity(pantryEmbedding, recipe.embedding!);
-        return { ...recipe, similarity };
-      })
+      .map((recipe) => ({
+        ...recipe,
+        similarity: cosineSimilarity(pantryEmbedding, recipe.embedding!),
+      }))
       .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, 5); // top 5 recipes
+      .slice(0, 5);
 
-    // 🧠 5️⃣ Enrich results with AI missing ingredient advice
+    // 5️⃣ Attach AI advice
     const topRecipesWithAdvice = await Promise.all(
-      scoredRecipes.map(async (recipe) => {
+      scoredRecipes.map(async (recipe:any) => {
+        const ingredientNames = recipe.ingredients.map((ing:IIngredient) => ing.name); // ✅ FIXED
+
         const advice = await getMissingIngredientAdvice(
           pantryList,
-          recipe.ingredients
+          ingredientNames // ✅ FIXED
         );
+
         return { ...recipe, advice };
       })
     );
 
-    // ✅ 6️⃣ Send response
+    // 6️⃣ Return response
     return res.status(200).json({
       message: "Suggested recipes based on your pantry",
       count: topRecipesWithAdvice.length,

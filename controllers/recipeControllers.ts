@@ -2,14 +2,15 @@ import multer from "multer";
 import { Request, Response } from "express";
 import Recipe, { IRecipe } from "../models/recipe";
 
-import User from "../models/user";
-import { getOpenAIEmbedding } from "../utils/embedding";
-import { cosineSimilarity } from "../utils/cosine";
-import { generateRecipesFromOpenAI } from '../utils/openaiRecipes';
-import { getFlaskEmbedding, getFlaskSimilarities } from "../utils/flaskEmbed";
+import User from "../models/auth";
+
+
+
+import {getFastapiEmbedding, getFastapiSimilarities} from '../services/fastapiService'
+
 import { generateRecipesFromProviders } from "../utils/externalProviders"; // 🔥 Combined Spoonacular + Edamam logic
 
-
+ import { cosineSimilarity } from "fast-cosine-similarity";
 import {
   detectIngredientsWithGoogleVision,
   analyzeImageWithOpenAI,
@@ -49,13 +50,13 @@ export const createRecipe = async (req: Request, res: Response) => {
       prepTime,
       costLevel,
       moodTags,
+      imageUrl,
     } = req.body;
 
-    // Cloudinary image from middleware
-    const imageUrl = (req.file as any)?.path;
+    
 
     const textToEmbed = `${title} ${ingredients.join(", ")} ${cuisine} ${dietaryTags.join(", ")}`;
-    const embedding = await getOpenAIEmbedding(textToEmbed);
+    const embedding = await getFastapiEmbedding(textToEmbed);
 
     const newRecipe = new Recipe({
       title,
@@ -82,7 +83,7 @@ export const createRecipe = async (req: Request, res: Response) => {
  * @route GET /api/recipes/foryou?userId=<id>
  * @access Private
  */
-export const getForYouRecipes = async (req: Request, res: Response) => {
+export const myRecipe = async (req: Request, res: Response) => {
   const userId = req.query.userId as string;
 
   if (!userId) {
@@ -111,7 +112,7 @@ export const getForYouRecipes = async (req: Request, res: Response) => {
     const userProfileText = preferenceTextParts.join(", ");
 
     // --- Generate embedding for the user's preference profile ---
-    const userEmbedding = await getOpenAIEmbedding(userProfileText);
+    const userEmbedding = await getFastapiEmbedding(userProfileText);
 
     // --- Retrieve recipes with existing embeddings ---
     const recipes = await Recipe.find({ embedding: { $exists: true } });
@@ -145,74 +146,56 @@ export const getForYouRecipes = async (req: Request, res: Response) => {
  * @route POST /api/recipes/ai/match
  * @access Public
  */
-const EMBEDDING_PROVIDER = process.env.EMBEDDING_PROVIDER || "local"; // "flask" | "local"
+const EMBEDDING_PROVIDER = process.env.EMBEDDING_PROVIDER || "local"; // "fastapi" | "local"
 
-export const matchIngredientsToRecipes = async (req: Request, res: Response) => {
+export const generateRecipe = async (req: Request, res: Response) => {
   try {
-    const { inputText, filters, provider } = req.body;
-    const file = (req as any).file;
-    let combinedText = inputText || "";
+    const { inputText, filters } = req.body;
+    const files = (req as any).files as Express.Multer.File[] | undefined;
 
-    // 🖼️ Analyze uploaded image if present
-    if (file) {
-      console.log("🧾 Image uploaded:", file.originalname);
+    let combinedText = inputText?.trim() ?? "";
 
-      const googleIngredients = await detectIngredientsWithGoogleVision(file.buffer);
-      const openaiDetected = await analyzeImageWithOpenAI(file.buffer);
-
-      const detectedIngredients = Array.from(
-        new Set([...googleIngredients, ...openaiDetected])
-      );
-
-      console.log("🍅 Detected ingredients:", detectedIngredients);
-      combinedText += " " + detectedIngredients.join(" ");
-    }
-
-    if (!combinedText.trim()) {
-      return res
-        .status(400)
-        .json({ error: "Missing or invalid input text or image" });
-    }
-
-    const selectedProvider = provider || EMBEDDING_PROVIDER;
-    console.log(`🚀 Using embedding provider: ${selectedProvider}`);
-
-    // 🧠 Generate embedding (try Flask, fallback to OpenAI)
-    let userEmbedding: number[] | null = null;
-    try {
-      if (selectedProvider === "flask") {
-        userEmbedding = await getFlaskEmbedding(combinedText);
-      } else {
-        userEmbedding = await getOpenAIEmbedding(combinedText);
-      }
-    } catch (err) {
-      console.error("❌ Embedding generation failed:", err);
-
-      // 🚨 Fallback to OpenAI if Flask fails
-      if (selectedProvider === "flask") {
+    // If image(s) are uploaded, detect ingredients
+    if (files && files.length > 0) {
+      const allDetected: string[] = [];
+      for (const file of files) {
         try {
-          console.log("🔄 Falling back to OpenAI embedding...");
-          userEmbedding = await getOpenAIEmbedding(combinedText);
-        } catch (fallbackErr) {
-          console.error("❌ Fallback embedding failed:", fallbackErr);
-          userEmbedding = null;
+          const google = await detectIngredientsWithGoogleVision(file.buffer);
+          const openai = await analyzeImageWithOpenAI(file.buffer);
+          allDetected.push(...google, ...openai);
+        } catch (visionErr) {
+          console.warn("🥽 Vision error for a file:", file.originalname, visionErr);
         }
       }
+      const unique = Array.from(new Set(allDetected));
+      if (unique.length > 0) {
+        combinedText += " " + unique.join(" ");
+      }
     }
 
-    // If embedding totally fails, skip to external providers
-    if (!userEmbedding) {
-      console.warn("⚠️ No valid embedding — switching to external recipe providers.");
+    if (!combinedText) {
+      return res.status(400).json({
+        error: "Missing or invalid input: provide text or image to generate recipes",
+      });
+    }
+
+    console.log("🚀 Generating embedding via FastAPI");
+    const userEmbedding = await getFastapiEmbedding(combinedText);
+
+    // Validate embedding
+    if (!Array.isArray(userEmbedding) || userEmbedding.length === 0) {
+      console.error("❌ Invalid embedding returned from FastAPI:", userEmbedding);
+      // Fallback to external recipes (Spoonacular only)
       const fallbackRecipes = await generateRecipesFromProviders(combinedText, filters);
       return res.json({
-        source: "external-fallback",
-        provider: "spoonacular+edamam",
+        source: "external",
+        provider: "spoonacular",
         recipes: fallbackRecipes,
       });
     }
 
-    // 🧮 Apply optional filters
-    const query: any = { embedding: { $exists: true } };
+    // Build query to pull recipes from DB
+    const query: any = { embedding: { $exists: true, $ne: [] } };
     if (filters?.costLevel) query.costLevel = filters.costLevel;
     if (filters?.dietaryTags?.length) query.dietaryTags = { $all: filters.dietaryTags };
     if (filters?.maxPrepTime) query.prepTime = { $lte: filters.maxPrepTime };
@@ -220,77 +203,49 @@ export const matchIngredientsToRecipes = async (req: Request, res: Response) => 
     if (filters?.moodTags?.length) query.moodTags = { $all: filters.moodTags };
 
     const recipes: IRecipe[] = await Recipe.find(query);
-    const validRecipes = recipes.filter(
-      (r) => Array.isArray(r.embedding) && r.embedding.length > 0
-    );
+    const validRecipes = recipes.filter(r => Array.isArray(r.embedding) && r.embedding.length > 0);
 
-    if (!validRecipes.length) {
-      console.warn("⚠️ No recipes with valid embeddings found in DB.");
-      const generatedRecipes = await generateRecipesFromProviders(combinedText, filters);
+    if (validRecipes.length === 0) {
+      console.warn("⚠️ No internal recipes with embeddings found");
+      const fallbackRecipes = await generateRecipesFromProviders(combinedText, filters);
       return res.json({
         source: "external",
-        provider: "spoonacular+edamam",
-        recipes: generatedRecipes,
+        provider: "spoonacular",
+        recipes: fallbackRecipes,
       });
     }
 
-    // 🧮 Compute similarities
-    let scored: { recipe: IRecipe; similarity: number }[] = [];
-    if (selectedProvider === "flask") {
-      try {
-        const recipeEmbeddings = validRecipes.map((r) => r.embedding!);
-        const similarities = await getFlaskSimilarities(userEmbedding, recipeEmbeddings);
-        scored = validRecipes.map((recipe, i) => ({
-          recipe,
-          similarity: similarities[i],
-        }));
-      } catch (err) {
-        console.error("⚠️ Flask similarity failed, using local cosine:", err);
-        scored = validRecipes.map((recipe) => ({
-          recipe,
-          similarity: cosineSimilarity(userEmbedding!, recipe.embedding || []),
-        }));
-      }
-    } else {
-      scored = validRecipes.map((recipe) => ({
-        recipe,
-        similarity: cosineSimilarity(userEmbedding!, recipe.embedding || []),
-      }));
-    }
+    console.log("🧮 Computing similarities via FastAPI");
+    const recipeEmbeddings = validRecipes.map(r => r.embedding!);
+    const similarities = await getFastapiSimilarities(userEmbedding, recipeEmbeddings);
 
-    // 🏆 Sort and return best matches
+    const scored = validRecipes.map((recipe, idx) => ({
+      recipe,
+      similarity: similarities[idx] ?? 0,
+    }));
+
     const topRecipes = scored
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, 3)
-      .map((r) => ({
+      .map(r => ({
         ...r.recipe.toObject(),
         similarity: r.similarity,
       }));
 
-    // ✅ Return best results or fallback to external providers
-    if (topRecipes.length > 0) {
-      return res.json({
-        source: "internal",
-        provider: selectedProvider,
-        recipes: topRecipes,
-      });
-    }
-
-    console.log("⚠️ No internal matches — generating recipes externally...");
-    const fallback = await generateRecipesFromProviders(combinedText, filters);
     return res.json({
-      source: "external-fallback",
-      provider: "spoonacular+edamam",
-      recipes: fallback,
+      source: "internal",
+      provider: "fastapi",
+      recipes: topRecipes,
     });
   } catch (error) {
-    console.error("❌ Ingredient matching failed:", error);
+    console.error("❌ Error in generateRecipe:", error);
     return res.status(500).json({
-      error: "Internal server error during recipe matching",
+      error: "Internal server error during recipe generation",
       details: error instanceof Error ? error.message : error,
     });
   }
 };
+
 /**
  * @desc Get all recipes
  * @route GET /api/recipes

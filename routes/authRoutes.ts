@@ -7,10 +7,13 @@ import {
   requestPasswordReset,
   resetPassword,
   logoutUser,
-  googleCallback, // added from Google OAuth controller
+  googleAuth,
+  googleAuthCallback,
+  refreshToken,
+  getAuthUser // added from Google OAuth controller
 } from "../controllers/authController";
-import { protect, adminOnly } from "../middlewares/authMiddleware";
-
+import { protect } from "../middlewares/authMiddleware";
+import {authorize} from "../middlewares/roleMiddleware"
 const router = express.Router();
 
 /**
@@ -32,24 +35,15 @@ router.post("/login", loginUser);
  * @desc Initiate Google OAuth login flow
  * @access Public
  */
-router.get(
-  "/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-    prompt: "select_account",
-  })
-);
+router.get('/google',  googleAuth )
+
 
 /**
  * @route GET /api/auth/google/callback
  * @desc Google OAuth callback - handle Google login/register
  * @access Public
  */
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { session: false, failureRedirect: "/login" }),
-  googleCallback
-);
+router.get('/google/callback', googleAuthCallback  )
 
 /**
  * @route POST /api/auth/reset-password
@@ -77,8 +71,24 @@ router.post("/logout", protect, logoutUser);
  * @desc Example admin-only route
  * @access Admin
  */
-router.get("/admin", protect, adminOnly, (req, res) => {
+router.get("/admin", protect, authorize('admin'), (req, res) => {
   res.json({ message: "Admin access granted." });
 });
+
+
+
+/**
+ * @route GET /api/auth/refresh
+ * @desc Example admin-only route
+ * @access Admin
+ */
+router.get("/refresh", refreshToken);
+
+/**
+ * @route GET /api/auth/current-user
+ * @desc Example admin-only route
+ * @access Admin
+ */
+router.get('/me', protect,  getAuthUser  )
 
 export default router;

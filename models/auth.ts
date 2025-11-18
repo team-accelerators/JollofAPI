@@ -1,15 +1,16 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
 export interface IUser extends Document {
+  _id: Types.ObjectId;
   name: string;
   email: string;
   googleId?: string;
   avatar?: string;
   isGoogleUser: boolean;
   password?: string;
-  role: "admin" | "user";
+  role: "admin" | "user" | "staff";
   preferences?: mongoose.Types.ObjectId;
   savedRecipes: mongoose.Types.ObjectId[];
   likedRecipes: mongoose.Types.ObjectId[];
@@ -28,7 +29,7 @@ const UserSchema = new Schema<IUser>(
     avatar: { type: String },
     isGoogleUser: { type: Boolean, default: false },
     password: { type: String, select: false },
-    role: { type: String, enum: ["admin", "user"], default: "user" },
+    role: { type: String, enum: ["admin", "staff", "user"], default: "user" },
 
     // Relationship
     preferences: { type: Schema.Types.ObjectId, ref: "UserPreference" },

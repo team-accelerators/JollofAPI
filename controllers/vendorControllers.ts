@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Vendor from "../models/vendors";
-import { syncVendors } from "../services/vendorService";
+import { syncFromOSM } from "../services/vendorService";
 
 
 export const syncVendor = async (req: Request, res: Response) => {
@@ -9,7 +9,7 @@ export const syncVendor = async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Missing lat/lng parameters" });
 
   try {
-    const result = await syncVendors(Number(lat), Number(lng));
+    const result = await syncFromOSM(Number(lat), Number(lng));
     res.json({
       success: true,
       source: result.source,

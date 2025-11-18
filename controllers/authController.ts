@@ -1,40 +1,51 @@
-//@ts-nocheck
-import { Request, Response } from "express";
+
+import { Request, Response, NextFunction } from "express";
 import { Types } from "mongoose";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import dotenv from "dotenv";
-import User from "../models/user";
+import User from "../models/auth";
 import UserPreference from "../models/userPreference";
-import { sendResetEmail } from "../utils/sendEmail";
-
+import { sendResetEmail } from "../utils/sendResetEmail";
+import passport from "../config/passport"
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
-const JWT_EXPIRES = (process.env.JWT_EXPIRES_IN || "7d") as jwt.SignOptions["expiresIn"];
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
+const JWT_EXPIRES = (process.env.JWT_EXPIRES_IN || "15m") as jwt.SignOptions["expiresIn"];
+const REFRESH_EXPIRES = "7d"; // refresh token lifespan
 
-/** Helper to generate JWT token */
+/** ----------------- HELPERS ----------------- **/
 
-const generateToken = (id: string, role: string) => {
-  const payload = { id, role };
-  const options: SignOptions = { expiresIn: JWT_EXPIRES };
-  return jwt.sign(payload, JWT_SECRET, options);
-}
-/** Helper to send JWT as HttpOnly cookie */
-const sendCookie = (res: Response, token: string) => {
-  res.cookie("jwt", token, {
+const generateAccessToken = (id: string, role: string) => {
+  return jwt.sign({ id, role }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+};
+
+const generateRefreshToken = (id: string) => {
+  return jwt.sign({ id }, JWT_REFRESH_SECRET, { expiresIn: REFRESH_EXPIRES });
+};
+
+/** Send both tokens as cookies */
+const sendAuthCookies = (res: Response, accessToken: string, refreshToken: string) => {
+  const isProd = process.env.NODE_ENV === "production";
+
+  res.cookie("jwt", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    maxAge: 15 * 60 * 1000, // 15 minutes
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
 
-/**
- * @route POST /api/auth/register
- * @desc Register user with onboarding info
- */
+/** ----------------- REGISTER ----------------- **/
 export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
@@ -44,19 +55,22 @@ export const register = async (req: Request, res: Response) => {
 
     const user = await User.create({ name, email, password });
 
-    // Create linked preferences
     const preferences = await UserPreference.create({
       user: user._id,
       dietaryPreferences: [],
-      cookingHabits: { skillLevel: "beginner", mealFrequency: "daily", prefersQuickMeals: true },
+      cookingHabits: {
+        skillLevel: "beginner",
+        mealFrequency: "daily",
+        prefersQuickMeals: true,
+      },
     });
 
     user.preferences = preferences._id;
     await user.save();
 
-    // const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
-    const token = generateToken((user._id as Types.ObjectId).toString(), user.role);
-    sendCookie(res, token);
+    const accessToken = generateAccessToken(user._id.toString(), user.role);
+    const refreshToken = generateRefreshToken(user._id.toString());
+    sendAuthCookies(res, accessToken, refreshToken);
 
     res.status(201).json({
       success: true,
@@ -69,24 +83,21 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * @route POST /api/auth/login
- * @desc Authenticate user via email/password
- */
+/** ----------------- LOGIN ----------------- **/
 export const loginUser = async (req: Request, res: Response) => {
   try {
+    console.log(req.body)
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select("+password");
-    if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (!user.password)
-      return res.status(500).json({ error: "Password not found in user record" });
+    if (!user || !user.password) return res.status(400).json({ error: "User not found" });
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = generateToken((user._id as Types.ObjectId).toString(), user.role);
-    sendCookie(res, token);
+    const accessToken = generateAccessToken(user._id.toString(), user.role);
+    const refreshToken = generateRefreshToken(user._id.toString());
+    sendAuthCookies(res, accessToken, refreshToken);
 
     res.status(200).json({ message: "Login successful" });
   } catch (err) {
@@ -95,37 +106,43 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * @route GET /api/auth/google/callback
- * @desc Google OAuth callback (handled by Passport)
- */
-export const googleCallback = async (req: Request, res: Response) => {
+/** ----------------- REFRESH TOKEN ----------------- **/
+export const refreshToken = async (req: Request, res: Response) => {
   try {
-    const { user, token } = req.user as any;
+    const token = req.cookies.refreshToken;
+    if (!token) return res.status(401).json({ error: "No refresh token" });
 
-    sendCookie(res, token);
+    const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as { id: string };
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    res.status(200).json({
-      success: true,
-      message: "Google login successful",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        role: user.role,
-      },
-    });
+    const newAccessToken = generateAccessToken(user._id.toString(), user.role);
+    sendAuthCookies(res, newAccessToken, token); // keep refreshToken same
+
+    res.status(200).json({ success: true });
   } catch (err) {
-    console.error("Google OAuth Error:", err);
-    res.status(500).json({ success: false, message: "Google authentication failed" });
+    console.error("Refresh Token Error:", err);
+    res.status(403).json({ error: "Invalid or expired refresh token" });
   }
 };
 
-/**
- * @route POST /api/auth/reset-password
- * @desc Send password reset email
- */
+/** ----------------- LOGOUT ----------------- **/
+export const logoutUser = async (_req: Request, res: Response) => {
+  const isProd = process.env.NODE_ENV === "production";
+  res.clearCookie("jwt", {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+  });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+  });
+  res.json({ message: "Logged out successfully" });
+};
+
+/** ----------------- PASSWORD RESET ----------------- **/
 export const requestPasswordReset = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
@@ -136,7 +153,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
 
     user.passwordResetToken = hashedToken;
-    user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
 
     const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
@@ -149,10 +166,6 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * @route POST /api/auth/reset/:token
- * @desc Reset password using valid token
- */
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
@@ -175,15 +188,49 @@ export const resetPassword = async (req: Request, res: Response) => {
   }
 };
 
+
+
+
+// GET /auth/google
+export const googleAuth = passport.authenticate('google', {
+  scope: ['profile', 'email'],
+   session: false, // Important for JWT
+})
+
 /**
- * @route POST /api/auth/logout
- * @desc Logout user by clearing JWT cookie
+ * @route GET /api/auth/google/callback
+ * @desc Google OAuth callback (handled by Passport)
  */
-export const logoutUser = async (_req: Request, res: Response) => {
-  res.clearCookie("jwt", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  });
-  res.json({ message: "Logged out successfully" });
+
+export const googleAuthCallback = (req:Request, res:Response, next:NextFunction) => {
+  passport.authenticate('google', { session: true }, (err, user) => {
+
+    if (err || !user){
+    console.log(err)
+    return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth`);
+    }
+
+    const accessToken = generateAccessToken(user._id.toString(), user.role);
+    const refreshToken = generateRefreshToken(user._id.toString());
+    sendAuthCookies(res, accessToken, refreshToken);
+   
+    return res.redirect(`${process.env.CLIENT_URL!}`);
+
+  })(req, res, next);
 };
+
+/**
+ * @route GET /api/auth/me/
+ * @desc Get current user
+ */
+
+export const  getAuthUser = async (req:Request,  res:Response) => {
+
+  if (!req.user){
+   return res.json({ success: false, message:`No User Found`})
+  }
+console.log(`my ${req.user}`)
+ return  res.status(200).json({ success: true, message:`Welcome ${req.user}`, user: req.user })
+
+  }
+  

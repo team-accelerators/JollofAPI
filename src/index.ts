@@ -1,6 +1,8 @@
+// import dotenv from 'dotenv';
+// dotenv.config()
 import { setupSwagger } from './swager';
 import "./jobs/vendorCron";
-import dotenv from 'dotenv';
+
 import app from './server';
 import {connectDB} from '../config/connectDB'
 
@@ -14,7 +16,7 @@ import axios from 'axios';
 // console.log("Random Hex:", randomHex);
 
 const PORT = process.env.PORT || 5000;
-dotenv.config()
+
 
 cron.schedule('*/1440 * * * *', async () => {
   try {
@@ -27,23 +29,43 @@ cron.schedule('*/1440 * * * *', async () => {
 });
 
 
-const MONGO_URL = process.env.MONGO_URI
- const startServer  = async () => {
-  try{
-await connectDB(MONGO_URL!);
-}catch (err){
-  console.error('Failed to connect to MongoDB', err);
+const startServer = async () => {
+  try {
+    // 1️⃣ Connect to MongoDB — wait for it!
+    await connectDB(process.env.MONGO_URI!);
+
+    // 2️⃣ Setup Swagger after DB OK
+    setupSwagger(app);
+
+    // 3️⃣ Start API server ONLY after DB success
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📘 Swagger docs at http://localhost:${PORT}/api-docs`);
+    });
+  } catch (err) {
+    console.error("❌ Failed to connect to MongoDB", err);
     process.exit(1);
-}
-
-
-}
+  }
+};
 
 startServer();
 
-setupSwagger(app);
+//  const startServer  = async () => {
+//   try{
+// await connectDB(process.env.MONGO_URI!);
+// }catch (err){
+//   console.error('Failed to connect to MongoDB', err);
+//     process.exit(1);
+// }
+
+
+// }
+
+// startServer();
+
+// setupSwagger(app);
   
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('Swagger docs at http://localhost:5000/api-docs');
-});
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+//   console.log('Swagger docs at http://localhost:5000/api-docs');
+// });

@@ -29,8 +29,8 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 const allowedOrigins = [
-   process.env!.FRONTEND_URL_dev, // Example frontend running locally
-  process.env!.FRONTEND_URL_prod, //  production frontend
+   process.env!.CLIENT_URL,
+
 ].filter(Boolean) as string[]; // remove undefined and ensure type
 
 // Define CORS options

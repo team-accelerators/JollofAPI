@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import User from "../models/user";
+import User from "../models/auth";
 import UserPreference from "../models/userPreference";
 import { getOpenAICompletion } from "../utils/openaiHelper"; // custom utility for AI responses
 

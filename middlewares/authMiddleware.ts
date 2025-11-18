@@ -2,26 +2,33 @@
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
 import { Request, Response, NextFunction } from "express";
-import User, { IUser } from "../models/user";
+import User from "../models/auth";
 
 interface DecodedToken {
   id: string;
+  role?: string;
   iat: number;
   exp: number;
 }
 
+/**
+ * Protect middleware – validates access token (JWT)
+ * Checks Authorization header or HttpOnly cookie
+ */
 export const protect = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   let token: string | undefined;
 
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+  // Try from header first
+  if (req.headers.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies && req.cookies.jwt) {
+  }
+  // Then check cookies
+  else if (req.cookies?.jwt) {
     token = req.cookies.jwt;
   }
 
   if (!token) {
-    res.status(401);
-    throw new Error("Not authorized, no token");
+    return res.status(401).json({ message: "Not authorized: No token" });
   }
 
   try {
@@ -29,25 +36,30 @@ export const protect = asyncHandler(async (req: Request, res: Response, next: Ne
     const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
-      res.status(401);
-      throw new Error("User not found");
+      return res.status(401).json({ message: "User not found" });
     }
 
-    req.user = user; // ✅ Now recognized as IUser
+    req.user = user; // attach user to request
     next();
-  } catch (err) {
-    console.error("Auth error:", err);
-    res.status(401);
-    throw new Error("Not authorized, token failed");
+  } catch (err: any) {
+    console.error("JWT Auth Error:", err.message);
+
+    // Handle token expiration gracefully
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired" });
+    }
+
+    return res.status(401).json({ message: "Not authorized, token invalid" });
   }
 });
 
+/**
+ * Admin-only middleware
+ */
 export const adminOnly = (req: Request, res: Response, next: NextFunction) => {
- 
-  if (req.user && req?.user?.role === "admin") {
+  if (req.user && req.user.role === "admin") {
     next();
   } else {
-    res.status(403);
-    throw new Error("Access denied: Admins only");
+    res.status(403).json({ message: "Access denied: Admins only" });
   }
 };

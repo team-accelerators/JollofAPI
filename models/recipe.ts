@@ -1,47 +1,122 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-// 🍳 Recipe Interface
+//
+// 🍽 Ingredient Subdocument
+//
+export interface IIngredient {
+  id: string;
+  name: string;
+  amount: string;
+  unit: string;
+}
+
+const ingredientSchema = new Schema<IIngredient>(
+  {
+    id: { type: String, required: true },
+    name: { type: String, required: true },
+    amount: { type: String, required: true },
+    unit: { type: String, required: true },
+  },
+  { _id: false }
+);
+
+//
+// 👨‍🍳 Instruction Subdocument
+//
+export interface IInstruction {
+  id: string;
+  step: number;
+  description: string;
+}
+
+const instructionSchema = new Schema<IInstruction>(
+  {
+    id: { type: String, required: true },
+    step: { type: Number, required: true },
+    description: { type: String, required: true },
+  },
+  { _id: false }
+);
+
+//
+// 🧠 Recipe Interface (full backend model)
+//
 export interface IRecipe extends Document {
   title: string;
-  ingredients: string[];
-  instructions: string;
+  description: string;
+
+  servings: number;
+  prepTime: number;
+  cookTime: number;
+
+  difficulty: "Easy" | "Medium" | "Hard";
+  category: string;
   cuisine: string;
-  dietaryTags: string[]; // e.g., ['vegan', 'gluten-free']
-  prepTime: number;      // in minutes
-  costLevel: "low" | "medium" | "high";
-  moodTags: string[];    // e.g., ['Comfort Food', 'Healthy Boost']
+
+  ingredients: IIngredient[];
+  instructions: IInstruction[];
+
+  tags: string[];
+  nutritionNotes: string;
+
   imageUrl?: string;
-  embedding?: number[];  // OpenAI vector
-  similarity?: number;   // computed during pantry matching (not stored)
+
+  // Additions from your guide:
+  costLevel: "low" | "medium" | "high";
+  moodTags: string[];
+
+  embedding?: number[];
+  similarity?: number;
+
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-// 🧠 Recipe Schema
+//
+// 📘 Recipe Schema
+//
 const recipeSchema = new Schema<IRecipe>(
   {
     title: { type: String, required: true },
-    ingredients: [{ type: String, required: true }],
-    instructions: { type: String, required: true },
+    description: { type: String, required: true },
 
-    cuisine: { type: String, required: true },
-    dietaryTags: [{ type: String }],
-
+    servings: { type: Number, required: true },
     prepTime: { type: Number, required: true },
-    costLevel: {
+    cookTime: { type: Number, required: true },
+
+    difficulty: {
       type: String,
-      enum: ["low", "medium", "high"],
+      enum: ["Easy", "Medium", "Hard"],
       required: true,
     },
 
-    moodTags: [{ type: String }],
+    category: { type: String, required: true },
+    cuisine: { type: String, required: true },
+
+    // 🍅 Full nested ingredients + instructions
+    ingredients: { type: [ingredientSchema], required: true },
+    instructions: { type: [instructionSchema], required: true },
+
+    tags: [{ type: String }],
+    nutritionNotes: { type: String },
+
     imageUrl: { type: String },
 
-    // 🔮 OpenAI vector for similarity search
+    // 💰 You did not include cost level in the UI, but the guide requires it
+    costLevel: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      default: "medium",
+    },
+
+    // 😄 Mood tags (empty by default)
+    moodTags: [{ type: String }],
+
+    // 🔮 Vector embedding used for semantic search
     embedding: {
       type: [Number],
       default: [],
-      index: "text", // helps in semantic search queries (optional)
+      index: "text",
     },
   },
   {
@@ -49,13 +124,16 @@ const recipeSchema = new Schema<IRecipe>(
   }
 );
 
-// ⚙️ Add index for text-based search fallback
+//
+// 🔎 Text index for fallback search
+//
 recipeSchema.index({
   title: "text",
+  description: "text",
   ingredients: "text",
   cuisine: "text",
-  dietaryTags: "text",
-  moodTags: "text",
+  tags: "text",
+  category: "text",
 });
 
 const Recipe = mongoose.model<IRecipe>("Recipe", recipeSchema);

@@ -240,6 +240,21 @@
         }
       }
     },
+    "/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get current authorized user",
+        "security": [{ "BearerAuth": [] }],
+        "description": "Returns details of the currently authenticated user.",
+        "responses": {
+          "200": {
+            "description": "Current user retrieved successfully",
+            "content": { "application/json": { "example": { "success": true, "message": "Welcome Jane Doe", "user": { "_id": "67107d1b6dfd001fe31cd1f1", "name": "Jane Doe", "email": "jane@example.com", "role": "user" } } } }
+          },
+          "401": { "$ref": "#/components/responses/401Unauthorized" }
+        }
+      }
+    },
     "/auth/logout": {
       "post": {
         "tags": ["Auth"],
@@ -314,21 +329,7 @@
         }
       }
     },
-    "/users/me": {
-      "get": {
-        "tags": ["Users"],
-        "summary": "Get current authorized user",
-        "security": [{ "BearerAuth": [] }],
-        "description": "Returns details of the currently authenticated user.",
-        "responses": {
-          "200": {
-            "description": "Current user retrieved successfully",
-            "content": { "application/json": { "example": { "success": true, "message": "Welcome Jane Doe", "user": { "_id": "67107d1b6dfd001fe31cd1f1", "name": "Jane Doe", "email": "jane@example.com", "role": "user" } } } }
-          },
-          "401": { "$ref": "#/components/responses/401Unauthorized" }
-        }
-      }
-    },
+    
     "/users/all": {
       "get": {
         "tags": ["Users"],
@@ -449,7 +450,7 @@
         }
       }
     },
-    "/recipes/foryou": {
+    "/recipes/my-recipe": {
       "get": {
         "tags": ["Recipes"],
         "summary": "Get personalized recipe feed",
@@ -465,7 +466,7 @@
         }
       }
     },
-    "/recipes/match-ingredients": {
+    "/recipes/generate-recipe": {
       "post": {
         "tags": ["Recipes"],
         "summary": "Find recipes matching given ingredients using AI",
