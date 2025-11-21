@@ -30,7 +30,7 @@ const generateRefreshToken = (id: string) => {
 const sendAuthCookies = (res: Response, accessToken: string, refreshToken: string) => {
   const isProd = process.env.NODE_ENV === "production";
 
-  res.cookie("jwt", accessToken, {
+  res.cookie("accessToken", accessToken, {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
@@ -129,7 +129,7 @@ export const refreshToken = async (req: Request, res: Response) => {
 /** ----------------- LOGOUT ----------------- **/
 export const logoutUser = async (_req: Request, res: Response) => {
   const isProd = process.env.NODE_ENV === "production";
-  res.clearCookie("jwt", {
+  res.clearCookie("accessToken", {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
