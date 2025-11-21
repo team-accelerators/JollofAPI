@@ -23,8 +23,8 @@ export const protect = asyncHandler(async (req: Request, res: Response, next: Ne
     token = req.headers.authorization.split(" ")[1];
   }
   // Then check cookies
-  else if (req.cookies?.jwt) {
-    token = req.cookies.jwt;
+  else if (req.cookies?.accessToken) {
+    token = req.cookies.accessToken;
   }
 
   if (!token) {
