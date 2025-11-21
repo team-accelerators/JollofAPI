@@ -4,7 +4,7 @@ import "../config/passport"; // ensure GoogleStrategy is registered
 import {
   register,
   loginUser,
-  requestPasswordReset,
+  forgotPasswordRequest,
   resetPassword,
   logoutUser,
   googleAuth,
@@ -50,7 +50,7 @@ router.get('/google/callback', googleAuthCallback  )
  * @desc Request password reset link
  * @access Public
  */
-router.post("/reset-password", requestPasswordReset);
+router.post("/reset-password", forgotPasswordRequest);
 
 /**
  * @route POST /api/auth/reset/:token

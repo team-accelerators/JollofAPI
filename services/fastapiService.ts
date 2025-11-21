@@ -4,10 +4,10 @@ dotenv.config();
 
 // FastAPI endpoints (identical to the Flask ones)
 const FASTAPI_EMBEDDING_URL =
-  process.env.FASTAPI_EMBEDDING_URL || "http://fastapi_service:5001/embed";
+  process.env.FASTAPI_EMBEDDING_URL || "http://127.0.0.1:8000/embed";
 
 const FASTAPI_SIMILARITY_URL =
-  process.env.FASTAPI_SIMILARITY_URL || "http://fastapi_service:5001/similarity";
+  process.env.FASTAPI_SIMILARITY_URL || "http://127.0.0.1:8000/similarity";
 
 /**
  * Generate an embedding from the FastAPI microservice

@@ -49,23 +49,3 @@ const startServer = async () => {
 };
 
 startServer();
-
-//  const startServer  = async () => {
-//   try{
-// await connectDB(process.env.MONGO_URI!);
-// }catch (err){
-//   console.error('Failed to connect to MongoDB', err);
-//     process.exit(1);
-// }
-
-
-// }
-
-// startServer();
-
-// setupSwagger(app);
-  
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-//   console.log('Swagger docs at http://localhost:5000/api-docs');
-// });

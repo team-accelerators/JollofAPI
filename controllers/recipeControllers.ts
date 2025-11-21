@@ -40,42 +40,92 @@ export const uploadIngredientImage = upload.array("images", 5); // up to 5 image
  * @access Private
  */
 export const createRecipe = async (req: Request, res: Response) => {
+  console.log(req.body)
   try {
     const {
       title,
+      description,
+      servings,
+      prepTime,
+      cookTime,
+      difficulty,
+      category,
+      cuisine,
       ingredients,
       instructions,
-      cuisine,
-      dietaryTags,
-      prepTime,
+      tags,
+      nutritionNotes,
       costLevel,
       moodTags,
-      imageUrl,
+      image,
     } = req.body;
 
-    
+    // Default values
+    const safeTitle = (title || "Untitled Recipe").trim();
+    const safeDescription = (description || "No description provided").trim();
+    const safeServings = Number(servings) > 0 ? Number(servings) : 1;
+    const safePrepTime = Number(prepTime) >= 0 ? Number(prepTime) : 0;
+    const safeCookTime = Number(cookTime) >= 0 ? Number(cookTime) : 0;
+    const safeDifficulty = ["Easy", "Medium", "Hard"].includes(difficulty) ? difficulty : "Medium";
+    const safeCategory = (category || "Other").trim();
+    const safeCuisine = (cuisine || "Other").trim();
+    const safeCostLevel = ["low", "medium", "high"].includes(costLevel) ? costLevel : "medium";
 
-    const textToEmbed = `${title} ${ingredients.join(", ")} ${cuisine} ${dietaryTags.join(", ")}`;
+    // Process ingredients
+    const safeIngredients = Array.isArray(ingredients) ? ingredients : [];
+    const numberedIngredients = safeIngredients
+      .map((ing, index) => ({
+        id: ing.id || `${Date.now()}-${index}`,
+        name: (ing.name || "").trim(),
+        amount: (ing.amount || "").trim(),
+        unit: (ing.unit || "").trim(),
+      }))
+      .filter(ing => ing.name && ing.amount && ing.unit);
+
+    // Process instructions
+    const safeInstructions = Array.isArray(instructions) ? instructions : [];
+    const numberedInstructions = safeInstructions
+      .map((inst, index) => ({
+        id: inst.id || `${Date.now()}-inst-${index}`,
+        step: index + 1,
+        description: (inst.description || "").trim(),
+      }))
+      .filter(inst => inst.description);
+
+    // Tags
+    const safeTags = Array.isArray(tags) ? tags.map(t => t.trim()).filter(t => t) : [];
+    const safeMoodTags = Array.isArray(moodTags) ? moodTags.map(t => t.trim()).filter(t => t) : [];
+
+    // Text for embedding
+    const textToEmbed = `${safeTitle} ${numberedIngredients.map(i => i.name).join(", ")} ${safeCuisine} ${safeTags.join(", ")}`;
     const embedding = await getFastapiEmbedding(textToEmbed);
 
+    // Create Recipe
     const newRecipe = new Recipe({
-      title,
-      ingredients,
-      instructions,
-      cuisine,
-      dietaryTags,
-      prepTime,
-      costLevel,
-      moodTags,
-      imageUrl,
+      title: safeTitle,
+      description: safeDescription,
+      servings: safeServings,
+      prepTime: safePrepTime,
+      cookTime: safeCookTime,
+      difficulty: safeDifficulty,
+      category: safeCategory,
+      cuisine: safeCuisine,
+      ingredients: numberedIngredients,
+      instructions: numberedInstructions,
+      tags: safeTags,
+      nutritionNotes: (nutritionNotes || "").trim(),
+      costLevel: safeCostLevel,
+      moodTags: safeMoodTags,
+      imageUrl: image, // Frontend should send Cloudinary URL
       embedding,
     });
 
     await newRecipe.save();
-    res.status(201).json({ success: true, data: newRecipe });
+
+    res.status(201).json({ success: true, message:"Recipe created successfully", data: newRecipe });
   } catch (err) {
     console.error("Create recipe failed:", err);
-    res.status(500).json({ error: "Failed to create recipe" });
+    res.status(500).json({ error: "Failed to create recipe" , message: "Failed to create recipe" });
   }
 };
 /**
@@ -87,13 +137,13 @@ export const myRecipe = async (req: Request, res: Response) => {
   const userId = req.query.userId as string;
 
   if (!userId) {
-    return res.status(400).json({ error: "Missing userId in query" });
+    return res.status(400).json({ error: "Missing userId in query", message: "Missing userId in query"  });
   }
 
   try {
     // Fetch user with linked preferences
     const user = await User.findById(userId).populate("preferences");
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: "User not found", message: "User not found" });
 
     const prefs = user.preferences as any;
 
@@ -131,12 +181,13 @@ export const myRecipe = async (req: Request, res: Response) => {
 
     res.json({
       success: true,
+      message:"My recipes returned successfully",
       count: topRecipes.length,
       recommendations: topRecipes,
     });
   } catch (err) {
     console.error("Error generating personalized recipes:", err);
-    res.status(500).json({ error: "Failed to fetch personalized recipe feed" });
+    res.status(500).json({ error: "Failed to fetch personalized recipe feed", message:"Failed to fetch personalized recipe feed" });
   }
 };
 
@@ -176,6 +227,7 @@ export const generateRecipe = async (req: Request, res: Response) => {
     if (!combinedText) {
       return res.status(400).json({
         error: "Missing or invalid input: provide text or image to generate recipes",
+         message: "Missing or invalid input: provide text or image to generate recipes",
       });
     }
 
@@ -188,6 +240,7 @@ export const generateRecipe = async (req: Request, res: Response) => {
       // Fallback to external recipes (Spoonacular only)
       const fallbackRecipes = await generateRecipesFromProviders(combinedText, filters);
       return res.json({
+        message:"recipe generated successfully!",
         source: "external",
         provider: "spoonacular",
         recipes: fallbackRecipes,
@@ -209,6 +262,7 @@ export const generateRecipe = async (req: Request, res: Response) => {
       console.warn("⚠️ No internal recipes with embeddings found");
       const fallbackRecipes = await generateRecipesFromProviders(combinedText, filters);
       return res.json({
+        message:"Fallback recipes generated!",
         source: "external",
         provider: "spoonacular",
         recipes: fallbackRecipes,
@@ -233,6 +287,7 @@ export const generateRecipe = async (req: Request, res: Response) => {
       }));
 
     return res.json({
+      message:"recipe generated successfully",
       source: "internal",
       provider: "fastapi",
       recipes: topRecipes,
@@ -254,7 +309,7 @@ export const generateRecipe = async (req: Request, res: Response) => {
 export const getAllRecipes = async (req: Request, res: Response) => {
   try {
     const recipes = await Recipe.find().populate("ingredients.ingredient");
-    res.status(200).json({ success: true, count: recipes.length, data: recipes });
+    res.status(200).json({ success: true, message:"get all recipes successfull!", count: recipes.length, data: recipes });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -267,9 +322,10 @@ export const getAllRecipes = async (req: Request, res: Response) => {
  */
 export const getRecipeById = async (req: Request, res: Response) => {
   try {
-    const recipe = await Recipe.findById(req.params.id).populate("ingredients.ingredient");
+    const recipe = await Recipe.findById(req.params.id);
     if (!recipe) return res.status(404).json({ success: false, message: "Recipe not found" });
-    res.status(200).json({ success: true, data: recipe });
+    console.log(recipe)
+    res.status(200).json({ success: true, data: recipe , message:"Recipe found!"});
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }

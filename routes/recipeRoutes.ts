@@ -11,6 +11,7 @@ import {
 } from "../controllers/recipeControllers";
 import { protect, adminOnly } from "../middlewares/authMiddleware";
 import { upload } from "../middlewares/upload";
+import {authorize} from "../middlewares/roleMiddleware"
 
 const router = express.Router();
 
@@ -18,18 +19,9 @@ const router = express.Router();
  * @route POST /api/recipes
  * @desc Create a new recipe (with AI embedding and Cloudinary image upload)
  * @access Private (Admin only)
- * @param {string} title - Recipe title
- * @param {string[]} ingredients - List of ingredients
- * @param {string[]} instructions - Cooking instructions
- * @param {string} cuisine - Cuisine type
- * @param {string[]} dietaryTags - Dietary preferences (vegan, keto, etc.)
- * @param {number} prepTime - Preparation time in minutes
- * @param {string} costLevel - Cost level (low, medium, high)
- * @param {string[]} moodTags - Tags like "comfort", "party", etc.
- * @param {file} image - Image file uploaded via Cloudinary
- * @returns {object} The created recipe document
+
  */
-router.post("/", protect, adminOnly, upload.single("image"), createRecipe);
+router.post("/", protect, authorize("admin", "staff"), upload.single("image"), createRecipe);
 
 /**
  * @route GET /api/recipes

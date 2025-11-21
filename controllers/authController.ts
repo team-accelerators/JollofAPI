@@ -90,7 +90,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select("+password");
 
-    if (!user || !user.password) return res.status(400).json({ error: "User not found" });
+    if (!user || !user.password) return res.status(400).json({ message: "User not found" });
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ error: "Invalid credentials" });
@@ -102,7 +102,7 @@ export const loginUser = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Login successful" });
   } catch (err) {
     console.error("Login Error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -114,15 +114,15 @@ export const refreshToken = async (req: Request, res: Response) => {
 
     const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as { id: string };
     const user = await User.findById(decoded.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ messgae: "User not found" });
 
     const newAccessToken = generateAccessToken(user._id.toString(), user.role);
     sendAuthCookies(res, newAccessToken, token); // keep refreshToken same
 
-    res.status(200).json({ success: true });
+    res.status(200).json({ success: true, message:"refreshtoken valid!" });
   } catch (err) {
     console.error("Refresh Token Error:", err);
-    res.status(403).json({ error: "Invalid or expired refresh token" });
+    res.status(403).json({ messgage: "Invalid or expired refresh token" });
   }
 };
 
@@ -143,7 +143,7 @@ export const logoutUser = async (_req: Request, res: Response) => {
 };
 
 /** ----------------- PASSWORD RESET ----------------- **/
-export const requestPasswordReset = async (req: Request, res: Response) => {
+export const forgotPasswordRequest = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -162,7 +162,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     res.json({ message: "Password reset link sent" });
   } catch (err) {
     console.error("Reset Password Error:", err);
-    res.status(500).json({ error: "Email could not be sent" });
+    res.status(500).json({ message: "Email could not be sent" });
   }
 };
 
@@ -174,7 +174,7 @@ export const resetPassword = async (req: Request, res: Response) => {
       passwordResetExpires: { $gt: Date.now() },
     });
 
-    if (!user) return res.status(400).json({ error: "Invalid or expired token" });
+    if (!user) return res.status(400).json({ message: "Invalid or expired token" });
 
     user.password = await bcrypt.hash(req.body.password, 10);
     user.passwordResetToken = undefined;
@@ -184,7 +184,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.json({ message: "Password successfully reset" });
   } catch (err) {
     console.error("Reset Password Save Error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 

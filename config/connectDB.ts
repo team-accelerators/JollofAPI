@@ -8,6 +8,7 @@ try {
   const connection = await  mongoose.connect(url);
   console.timeEnd('mongoose_connect');
   console.log('🟢 Connected to MongoDB');
+  
   return connection;
 } catch (error) {
   console.error('🔴 MongoDB connection error:', error);
