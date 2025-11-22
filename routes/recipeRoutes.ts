@@ -15,6 +15,26 @@ import {authorize} from "../middlewares/roleMiddleware"
 
 const router = express.Router();
 
+
+/**
+ * @route GET /api/recipes/my-recipe
+ * @desc Get AI-personalized recipe recommendations based on user profile
+ * @access Private
+ * @query {string} userId - The ID of the user
+ * @returns {object[]} Top recommended recipes
+ */
+router.get("/my-recipe", protect, myRecipe);
+
+/**
+ * @route POST /api/recipes/generate-recipe
+ * @desc Match input ingredients to similar recipes using AI embeddings
+ * @access Public
+ * @body {string} inputText - User's ingredient list (e.g., "tomato, rice, onion")
+ * @body {object} filters - Optional filters (dietaryTags, costLevel, etc.)
+ * @returns {object[]} Top 3 AI-matched recipes
+ */
+router.post("/generate-recipe", protect, uploadIngredientImage,  generateRecipe);
+
 /**
  * @route POST /api/recipes
  * @desc Create a new recipe (with AI embedding and Cloudinary image upload)
@@ -58,23 +78,5 @@ router.put("/:id", protect, adminOnly, updateRecipe);
  */
 router.delete("/:id", protect, adminOnly, deleteRecipe);
 
-/**
- * @route GET /api/recipes/foryou
- * @desc Get AI-personalized recipe recommendations based on user profile
- * @access Private
- * @query {string} userId - The ID of the user
- * @returns {object[]} Top recommended recipes
- */
-router.get("/my-recipe", protect, myRecipe);
-
-/**
- * @route POST /api/recipes/match-ingredients
- * @desc Match input ingredients to similar recipes using AI embeddings
- * @access Public
- * @body {string} inputText - User's ingredient list (e.g., "tomato, rice, onion")
- * @body {object} filters - Optional filters (dietaryTags, costLevel, etc.)
- * @returns {object[]} Top 3 AI-matched recipes
- */
-router.post("/generate-recipe", protect, uploadIngredientImage,  generateRecipe);
 
 export default router;

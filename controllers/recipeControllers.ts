@@ -130,10 +130,11 @@ export const createRecipe = async (req: Request, res: Response) => {
 };
 /**
  * @desc Personalized Recipe Feed (“For You”)
- * @route GET /api/recipes/foryou?userId=<id>
+ * @route GET /api/recipes/my-recipe?userId=<id>
  * @access Private
  */
 export const myRecipe = async (req: Request, res: Response) => {
+  console.log(req.query.userId)
   const userId = req.query.userId as string;
 
   if (!userId) {
@@ -178,7 +179,8 @@ export const myRecipe = async (req: Request, res: Response) => {
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, 20)
       .map((r) => r.recipe);
-
+    
+      console.log(topRecipes)
     res.json({
       success: true,
       message:"My recipes returned successfully",
