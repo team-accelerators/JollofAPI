@@ -21,7 +21,9 @@ const PORT = process.env.PORT || 5000;
 cron.schedule('*/1440 * * * *', async () => {
   try {
     const url = process.env.SERVER_URL!;
+    const url2 = process.env.FAST_API_SERVER_URL!
     await axios.get(url);
+    await axios.get(url2)
     console.log('Ping sent to:', url);
   } catch (err) {
     console.error('Ping failed', err);
