@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import Recipe, { IRecipe } from "../models/recipe";
 
 import User from "../models/auth";
-
+import { createRecipeSchema } from "../middlewares/validations/recipeValidation";
 
 
 import {getFastapiEmbedding, getFastapiSimilarities} from '../services/fastapiService'
@@ -43,6 +43,30 @@ export const createRecipe = async (req: Request, res: Response) => {
   console.log("Incoming form-data:", req.body);
 
   try {
+    // ----------- Parse Incoming JSON Strings Before Validation ----------- //
+    const rawData = {
+      ...req.body,
+      ingredients: JSON.parse(req.body.ingredients || "[]"),
+      instructions: JSON.parse(req.body.instructions || "[]"),
+      tags: JSON.parse(req.body.tags || "[]"),
+      moodTags: JSON.parse(req.body.moodTags || "[]"),
+      nutrition: JSON.parse(req.body.nutrition || "[]"),
+    };
+
+    // ----------- Joi Validation ----------- //
+    const { error, value: validated } = createRecipeSchema.validate(rawData, {
+      abortEarly: false,
+    });
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: error.details.map((d:any) => d.message),
+      });
+    }
+
+    // ----------- Destructure Validated Data ----------- //
     const {
       title,
       description,
@@ -58,128 +82,49 @@ export const createRecipe = async (req: Request, res: Response) => {
       moodTags,
       costLevel,
       nutrition,
-      imageUrl, // ⬅️ frontend sends imageUrl
-    } = req.body;
+      imageUrl,
+    } = validated;
 
-    // ----------- Parse JSON fields ----------- //
-    let ingredientsParsed = [];
-    let instructionsParsed = [];
-    let tagsParsed = [];
-    let moodTagsParsed = [];
-    let nutritionParsed = [];
-
-    try {
-      ingredientsParsed = JSON.parse(ingredients || "[]");
-      instructionsParsed = JSON.parse(instructions || "[]");
-      tagsParsed = JSON.parse(tags || "[]");
-      moodTagsParsed = JSON.parse(moodTags || "[]");
-      nutritionParsed = JSON.parse(nutrition || "[]");
-    } catch (err) {
-      console.error("JSON parse error:", err);
-    }
-
-    // ----------- Safe Defaults ------------ //
-    const safeTitle = (title || "Untitled Recipe").trim();
-    const safeDescription = (description || "").trim();
-    const safeServings = Number(servings) > 0 ? Number(servings) : 1;
-    const safePrepTime = Number(prepTime) >= 0 ? Number(prepTime) : 0;
-    const safeCookTime = Number(cookTime) >= 0 ? Number(cookTime) : 0;
-
-    const safeDifficulty = ["Easy", "Medium", "Hard"].includes(difficulty)
-      ? difficulty
-      : "Medium";
-
-    const safeCategory = (category || "Other").trim();
-    const safeCuisine = (cuisine || "Other").trim();
-    const safeCostLevel = ["low", "medium", "high"].includes(costLevel)
-      ? costLevel
-      : "medium";
-
-    // ----------- Ingredients ------------ //
-    const safeIngredients = (Array.isArray(ingredientsParsed) ? ingredientsParsed : []).map(
-      (ing, index) => ({
-        id: ing.id || `${Date.now()}-${index}`,
-        name: ing.name?.trim(),
-        amount: ing.amount?.trim(),
-        unit: ing.unit?.trim(),
-      })
-    ).filter((i) => i.name && i.amount && i.unit);
-
-    // ----------- Instructions ------------ //
-    const safeInstructions = (Array.isArray(instructionsParsed) ? instructionsParsed : []).map(
-      (inst, index) => ({
-        id: inst.id || `${Date.now()}-inst-${index}`,
-        step: index + 1,
-        description: inst.description?.trim(),
-      })
-    ).filter((i) => i.description);
-
-    // ----------- Tags ------------ //
-    const safeTags = Array.isArray(tagsParsed)
-      ? tagsParsed.filter(Boolean)
-      : [];
-
-    const safeMoodTags = Array.isArray(moodTagsParsed)
-      ? moodTagsParsed.filter(Boolean)
-      : [];
-
-    // ----------- Nutrition ------------ //
-    const safeNutrition = Array.isArray(nutritionParsed)
-      ? nutritionParsed.map((n) => ({
-          id: n.id || Date.now().toString(),
-          calories: Number(n.calories) || 0,
-          protein: Number(n.protein) || 0,
-          fat: Number(n.fat) || 0,
-          carbohydrates: Number(n.carbohydrates) || 0,
-          fiber: Number(n.fiber) || 0,
-          richIn: Array.isArray(n.richIn) ? n.richIn : [],
-          notes: n.notes || "",
-        }))
-      : [];
-
-    // ----------- Embedding Text ------------ //
-    const textToEmbed = `${safeTitle} ${safeIngredients
-      .map((i) => i.name)
-      .join(", ")} ${safeCuisine} ${safeTags.join(", ")}`;
+    // ----------- Embedding Text ----------- //
+    const textToEmbed = `${title} ${ingredients
+      .map((i: { name: any; }) => i.name)
+      .join(", ")} ${cuisine} ${tags.join(", ")}`;
 
     const embedding = await getFastapiEmbedding(textToEmbed);
 
-    // ----------- Create Recipe Document ------------ //
+    // ----------- Create Recipe Document ----------- //
     const newRecipe = new Recipe({
-      title: safeTitle,
-      description: safeDescription,
-      servings: safeServings,
-      prepTime: safePrepTime,
-      cookTime: safeCookTime,
-      difficulty: safeDifficulty,
-      category: safeCategory,
-      cuisine: safeCuisine,
-
-      ingredients: safeIngredients,
-      instructions: safeInstructions,
-
-      tags: safeTags,
-      moodTags: safeMoodTags,
-      costLevel: safeCostLevel,
-
-      nutrition: safeNutrition, // ⬅️ NEW
-      imageUrl,                // ⬅️ from Cloudinary
+      title,
+      description,
+      servings,
+      prepTime,
+      cookTime,
+      difficulty,
+      category,
+      cuisine,
+      ingredients,
+      instructions,
+      tags,
+      moodTags,
+      costLevel,
+      nutrition,
+      imageUrl, // From Cloudinary
       embedding,
-     
     });
 
     await newRecipe.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Recipe created successfully",
       data: newRecipe,
     });
   } catch (err) {
     console.error("Create recipe failed:", err);
-    res.status(500).json({
-      error: "Failed to create recipe",
-      message: err
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create recipe",
+      error: err instanceof Error ? err.message : err,
     });
   }
 };
