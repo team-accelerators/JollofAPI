@@ -93,7 +93,7 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!user || !user.password) return res.status(400).json({ message: "User not found" });
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: "Invalid credentials" });
+    if (!match) return res.status(401).json({ message: "Invalid credentials" });
 
     const accessToken = generateAccessToken(user._id.toString(), user.role);
     const refreshToken = generateRefreshToken(user._id.toString());
