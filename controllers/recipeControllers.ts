@@ -204,6 +204,7 @@ const EMBEDDING_PROVIDER = process.env.EMBEDDING_PROVIDER || "local"; // "fastap
 
 export const generateRecipe = async (req: Request, res: Response) => {
   try {
+    console.log(req.body)
     const { inputText, filters } = req.body;
     const files = (req as any).files as Express.Multer.File[] | undefined;
 
@@ -242,6 +243,7 @@ export const generateRecipe = async (req: Request, res: Response) => {
       console.error("❌ Invalid embedding returned from FastAPI:", userEmbedding);
       // Fallback to external recipes (Spoonacular only)
       const fallbackRecipes = await generateRecipesFromProviders(combinedText, filters);
+      console.log(fallbackRecipes)
       return res.json({
         message:"recipe generated successfully!",
         source: "external",
@@ -288,7 +290,7 @@ export const generateRecipe = async (req: Request, res: Response) => {
         ...r.recipe.toObject(),
         similarity: r.similarity,
       }));
-
+console.log(topRecipes)
     return res.json({
       message:"recipe generated successfully",
       source: "internal",
