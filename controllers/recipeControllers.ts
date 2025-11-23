@@ -40,7 +40,8 @@ export const uploadIngredientImage = upload.array("images", 5); // up to 5 image
  * @access Private
  */
 export const createRecipe = async (req: Request, res: Response) => {
-  console.log(req.body)
+  console.log("Incoming form-data:", req.body);
+
   try {
     const {
       title,
@@ -54,53 +55,96 @@ export const createRecipe = async (req: Request, res: Response) => {
       ingredients,
       instructions,
       tags,
-      nutritionNotes,
-      costLevel,
       moodTags,
-      image,
+      costLevel,
+      nutrition,
+      imageUrl, // ⬅️ frontend sends imageUrl
     } = req.body;
 
-    // Default values
+    // ----------- Parse JSON fields ----------- //
+    let ingredientsParsed = [];
+    let instructionsParsed = [];
+    let tagsParsed = [];
+    let moodTagsParsed = [];
+    let nutritionParsed = [];
+
+    try {
+      ingredientsParsed = JSON.parse(ingredients || "[]");
+      instructionsParsed = JSON.parse(instructions || "[]");
+      tagsParsed = JSON.parse(tags || "[]");
+      moodTagsParsed = JSON.parse(moodTags || "[]");
+      nutritionParsed = JSON.parse(nutrition || "[]");
+    } catch (err) {
+      console.error("JSON parse error:", err);
+    }
+
+    // ----------- Safe Defaults ------------ //
     const safeTitle = (title || "Untitled Recipe").trim();
-    const safeDescription = (description || "No description provided").trim();
+    const safeDescription = (description || "").trim();
     const safeServings = Number(servings) > 0 ? Number(servings) : 1;
     const safePrepTime = Number(prepTime) >= 0 ? Number(prepTime) : 0;
     const safeCookTime = Number(cookTime) >= 0 ? Number(cookTime) : 0;
-    const safeDifficulty = ["Easy", "Medium", "Hard"].includes(difficulty) ? difficulty : "Medium";
+
+    const safeDifficulty = ["Easy", "Medium", "Hard"].includes(difficulty)
+      ? difficulty
+      : "Medium";
+
     const safeCategory = (category || "Other").trim();
     const safeCuisine = (cuisine || "Other").trim();
-    const safeCostLevel = ["low", "medium", "high"].includes(costLevel) ? costLevel : "medium";
+    const safeCostLevel = ["low", "medium", "high"].includes(costLevel)
+      ? costLevel
+      : "medium";
 
-    // Process ingredients
-    const safeIngredients = Array.isArray(ingredients) ? ingredients : [];
-    const numberedIngredients = safeIngredients
-      .map((ing, index) => ({
+    // ----------- Ingredients ------------ //
+    const safeIngredients = (Array.isArray(ingredientsParsed) ? ingredientsParsed : []).map(
+      (ing, index) => ({
         id: ing.id || `${Date.now()}-${index}`,
-        name: (ing.name || "").trim(),
-        amount: (ing.amount || "").trim(),
-        unit: (ing.unit || "").trim(),
-      }))
-      .filter(ing => ing.name && ing.amount && ing.unit);
+        name: ing.name?.trim(),
+        amount: ing.amount?.trim(),
+        unit: ing.unit?.trim(),
+      })
+    ).filter((i) => i.name && i.amount && i.unit);
 
-    // Process instructions
-    const safeInstructions = Array.isArray(instructions) ? instructions : [];
-    const numberedInstructions = safeInstructions
-      .map((inst, index) => ({
+    // ----------- Instructions ------------ //
+    const safeInstructions = (Array.isArray(instructionsParsed) ? instructionsParsed : []).map(
+      (inst, index) => ({
         id: inst.id || `${Date.now()}-inst-${index}`,
         step: index + 1,
-        description: (inst.description || "").trim(),
-      }))
-      .filter(inst => inst.description);
+        description: inst.description?.trim(),
+      })
+    ).filter((i) => i.description);
 
-    // Tags
-    const safeTags = Array.isArray(tags) ? tags.map(t => t.trim()).filter(t => t) : [];
-    const safeMoodTags = Array.isArray(moodTags) ? moodTags.map(t => t.trim()).filter(t => t) : [];
+    // ----------- Tags ------------ //
+    const safeTags = Array.isArray(tagsParsed)
+      ? tagsParsed.filter(Boolean)
+      : [];
 
-    // Text for embedding
-    const textToEmbed = `${safeTitle} ${numberedIngredients.map(i => i.name).join(", ")} ${safeCuisine} ${safeTags.join(", ")}`;
+    const safeMoodTags = Array.isArray(moodTagsParsed)
+      ? moodTagsParsed.filter(Boolean)
+      : [];
+
+    // ----------- Nutrition ------------ //
+    const safeNutrition = Array.isArray(nutritionParsed)
+      ? nutritionParsed.map((n) => ({
+          id: n.id || Date.now().toString(),
+          calories: Number(n.calories) || 0,
+          protein: Number(n.protein) || 0,
+          fat: Number(n.fat) || 0,
+          carbohydrates: Number(n.carbohydrates) || 0,
+          fiber: Number(n.fiber) || 0,
+          richIn: Array.isArray(n.richIn) ? n.richIn : [],
+          notes: n.notes || "",
+        }))
+      : [];
+
+    // ----------- Embedding Text ------------ //
+    const textToEmbed = `${safeTitle} ${safeIngredients
+      .map((i) => i.name)
+      .join(", ")} ${safeCuisine} ${safeTags.join(", ")}`;
+
     const embedding = await getFastapiEmbedding(textToEmbed);
 
-    // Create Recipe
+    // ----------- Create Recipe Document ------------ //
     const newRecipe = new Recipe({
       title: safeTitle,
       description: safeDescription,
@@ -110,24 +154,36 @@ export const createRecipe = async (req: Request, res: Response) => {
       difficulty: safeDifficulty,
       category: safeCategory,
       cuisine: safeCuisine,
+
       ingredients: safeIngredients,
-      instructions: safeIngredients,
+      instructions: safeInstructions,
+
       tags: safeTags,
-      nutritionNotes: (nutritionNotes || "").trim(),
-      costLevel: safeCostLevel,
       moodTags: safeMoodTags,
-      imageUrl: image, // Frontend should send Cloudinary URL
+      costLevel: safeCostLevel,
+
+      nutrition: safeNutrition, // ⬅️ NEW
+      imageUrl,                // ⬅️ from Cloudinary
       embedding,
+     
     });
 
     await newRecipe.save();
 
-    res.status(201).json({ success: true, message:"Recipe created successfully", data: newRecipe });
+    res.status(201).json({
+      success: true,
+      message: "Recipe created successfully",
+      data: newRecipe,
+    });
   } catch (err) {
     console.error("Create recipe failed:", err);
-    res.status(500).json({ error: "Failed to create recipe" , message: "Failed to create recipe" });
+    res.status(500).json({
+      error: "Failed to create recipe",
+      message: err
+    });
   }
 };
+
 /**
  * @desc Personalized Recipe Feed (“For You”)
  * @route GET /api/recipes/my-recipe?userId=<id>

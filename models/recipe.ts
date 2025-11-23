@@ -15,7 +15,7 @@ const ingredientSchema = new Schema<IIngredient>(
     id: { type: String, required: true },
     name: { type: String, required: true },
     amount: { type: String, required: true },
-    unit: { type: String, required: true },
+    unit: { type: String, required: true }
   },
   { _id: false }
 );
@@ -33,13 +33,74 @@ const instructionSchema = new Schema<IInstruction>(
   {
     id: { type: String, required: true },
     step: { type: Number, required: true },
-    description: { type: String, required: true },
+    description: { type: String, required: true }
   },
   { _id: false }
 );
 
 //
-// 🧠 Recipe Interface (full backend model)
+// 🥗  Nutrition Subdocument
+//
+export interface INutrition {
+  id: string;
+  calories: number;
+
+  protein?: number;
+  fat?: number;
+  carbohydrates?: number;
+  fiber?: number;
+
+  richIn?: string[];
+  notes?: string;
+}
+
+const nutritionSchema = new Schema<INutrition>(
+  {
+    id: { type: String, required: true },
+    calories: { type: Number },
+
+    protein: { type: Number },
+    fat: { type: Number },
+    carbohydrates: { type: Number },
+    fiber: { type: Number },
+
+    richIn: { type: [String], default: [] },
+
+    notes: { type: String }
+  },
+  { _id: false }
+);
+
+//
+// 😄 Mood Tag Type
+//
+export type MoodTag =
+  | "comforting"
+  | "light"
+  | "indulgent"
+  | "energizing"
+  | "romantic"
+  | "festive"
+  | "cozy"
+  | "quick"
+  | "healthy"
+  | "rainy-day";
+
+const MOOD_TAGS: MoodTag[] = [
+  "comforting",
+  "light",
+  "indulgent",
+  "energizing",
+  "romantic",
+  "festive",
+  "cozy",
+  "quick",
+  "healthy",
+  "rainy-day"
+];
+
+//
+// 🧠 Recipe Interface
 //
 export interface IRecipe extends Document {
   title: string;
@@ -55,15 +116,12 @@ export interface IRecipe extends Document {
 
   ingredients: IIngredient[];
   instructions: IInstruction[];
-
-  tags: string[];
-  nutritionNotes: string;
+  nutrition: INutrition[];
 
   imageUrl?: string;
 
-  // Additions from your guide:
   costLevel: "low" | "medium" | "high";
-  moodTags: string[];
+  moodTags: MoodTag[];
 
   embedding?: number[];
   similarity?: number;
@@ -87,53 +145,51 @@ const recipeSchema = new Schema<IRecipe>(
     difficulty: {
       type: String,
       enum: ["Easy", "Medium", "Hard"],
-      required: true,
+      required: true
     },
 
     category: { type: String, required: true },
     cuisine: { type: String, required: true },
 
-    // 🍅 Full nested ingredients + instructions
     ingredients: { type: [ingredientSchema], required: true },
     instructions: { type: [instructionSchema], required: true },
 
-    tags: [{ type: String }],
-    nutritionNotes: { type: String },
+    nutrition: { type: [nutritionSchema], required: true },
 
     imageUrl: { type: String },
 
-    // 💰 You did not include cost level in the UI, but the guide requires it
     costLevel: {
       type: String,
       enum: ["low", "medium", "high"],
-      default: "medium",
+      default: "medium"
     },
 
-    // 😄 Mood tags (empty by default)
-    moodTags: [{ type: String }],
+    moodTags: [
+      {
+        type: String,
+        enum: MOOD_TAGS,
+        default: []
+      }
+    ],
 
-    // 🔮 Vector embedding used for semantic search
     embedding: {
       type: [Number],
       default: [],
-      index: "text",
-    },
+      index: "text"
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-//
-// 🔎 Text index for fallback search
-//
 recipeSchema.index({
   title: "text",
   description: "text",
   ingredients: "text",
   cuisine: "text",
   tags: "text",
-  category: "text",
+  category: "text"
 });
 
 const Recipe = mongoose.model<IRecipe>("Recipe", recipeSchema);
