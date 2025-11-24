@@ -79,27 +79,55 @@ export const register = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Registration failed" });
+    res.status(500).json({ message: "Registration failed", error:err });
   }
 };
 
 /** ----------------- LOGIN ----------------- **/
 export const loginUser = async (req: Request, res: Response) => {
   try {
-    console.log(req.body)
     const { email, password } = req.body;
+
+    // 1. Find the user including the hashed password
     const user = await User.findOne({ email }).select("+password");
+    if (!user || !user.password) {
+      return res.status(400).json({ message: "User not found" });
+    }
 
-    if (!user || !user.password) return res.status(400).json({ message: "User not found" });
+    // 2. Verify password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ message: "Invalid credentials" });
-
+    // 3. Generate tokens
     const accessToken = generateAccessToken(user._id.toString(), user.role);
     const refreshToken = generateRefreshToken(user._id.toString());
+
+    // 4. Set HTTP-only cookies for authentication
     sendAuthCookies(res, accessToken, refreshToken);
 
-    res.status(200).json({ message: "Login successful" });
+    // 5. Build a safe user object for Redux state
+    const safeUser = {
+      _id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar ?? null,
+      isGoogleUser: user.isGoogleUser,
+      googleId: user.googleId ?? undefined,
+      preferences: user.preferences ?? "",
+      savedRecipes: user.savedRecipes ?? [],
+      likedRecipes: user.likedRecipes ?? [],
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    // 6. Respond with safe user object and message
+    res.status(200).json({
+      message: "Login successful",
+      user: safeUser,
+    });
   } catch (err) {
     console.error("Login Error:", err);
     res.status(500).json({ message: "Server error" });

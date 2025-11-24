@@ -135,7 +135,7 @@ export interface IRecipe extends Document {
 //
 const recipeSchema = new Schema<IRecipe>(
   {
-    title: { type: String, required: true },
+    title: { type: String, required: true, unique:true },
     description: { type: String, required: true },
 
     servings: { type: Number, required: true },

@@ -19,6 +19,8 @@ export interface IUser extends Document {
 
   matchPassword(entered: string): Promise<boolean>;
   createPasswordResetToken(): string;
+  createdAt:Date,
+  updatedAt:Date
 }
 
 const UserSchema = new Schema<IUser>(
