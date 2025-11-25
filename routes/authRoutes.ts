@@ -1,6 +1,7 @@
 import express from "express";
-import passport from "passport";
-import "../config/passport"; // ensure GoogleStrategy is registered
+import {authLimiter} from '../middlewares/rateLimiter'
+
+
 import {
   register,
   loginUser,
@@ -21,14 +22,14 @@ const router = express.Router();
  * @desc Register new user with onboarding details
  * @access Public
  */
-router.post("/register", register);
+router.post("/register", authLimiter, register);
 
 /**
  * @route POST /api/auth/login
  * @desc Login and get JWT in HttpOnly cookie
  * @access Public
  */
-router.post("/login", loginUser);
+router.post("/login", authLimiter, loginUser);
 
 /**
  * @route GET /api/auth/google

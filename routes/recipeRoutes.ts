@@ -12,6 +12,7 @@ import {
 import { protect, adminOnly } from "../middlewares/authMiddleware";
 import { upload } from "../middlewares/upload";
 import {authorize} from "../middlewares/roleMiddleware"
+import {authLimiter} from '../middlewares/rateLimiter'
 
 const router = express.Router();
 
@@ -33,7 +34,7 @@ router.get("/my-recipe", protect, myRecipe);
  * @body {object} filters - Optional filters (dietaryTags, costLevel, etc.)
  * @returns {object[]} Top 3 AI-matched recipes
  */
-router.post("/generate-recipe", protect, uploadIngredientImage,  generateRecipe);
+router.post("/generate-recipe", authLimiter, protect, uploadIngredientImage,  generateRecipe);
 
 /**
  * @route POST /api/recipes
