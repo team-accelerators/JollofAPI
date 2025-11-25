@@ -1,6 +1,6 @@
 import express from "express";
 import { protect, adminOnly } from "../middlewares/authMiddleware";
-import { getUserProfile, updateUserProfile, getAllUsers, getAuthUser } from "../controllers/userProfileController";
+import { getUserProfile, updateUserProfile, getAllUsers } from "../controllers/userProfileController";
 
 const router = express.Router();
 
@@ -70,27 +70,7 @@ router.get("/profile", protect, getUserProfile);
 router.put("/profile", protect, updateUserProfile);
 /**
  * @swagger
- * /users:
- *   get:
- *     summary: Get authenticated user 
- *     description:  view loggedin  registered users.
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of all users.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- *       403:
- *         description: Forbidden — Admin access required.
- */
-router.get("/me", protect, getAuthUser);
-
+jkliop[lk]
 
 
 /**

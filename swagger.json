@@ -735,7 +735,7 @@
       }
     },
 
-    "/pantry/items": {
+    "/pantry": {
       "post": {
         "tags": ["Pantry"],
         "summary": "Add items to pantry",
