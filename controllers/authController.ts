@@ -34,6 +34,8 @@ const sendAuthCookies = (res: Response, accessToken: string, refreshToken: strin
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
+    domain:process.env.CLIENT_URL,
+    path: "/",
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
@@ -41,6 +43,8 @@ const sendAuthCookies = (res: Response, accessToken: string, refreshToken: strin
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
+    domain:process.env.CLIENT_URL,
+    path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
